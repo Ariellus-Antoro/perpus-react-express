@@ -12,15 +12,22 @@ const createUser = async (userData) => {
 }
 
 const saveSession = async (userId, token, expiresAt) => {
-    const query = 'INSERT INTO token_sessions (user_Id, token, expiresAt) values (?,?,?)';
+    const query = 'INSERT INTO token_sessions (user_Id, token, expires_At) values (?,?,?)';
     const [response] = await db.execute(query,[userId, token, expiresAt]);
     return response;
+}
+
+const getUserById = async (id) => {
+    const query = 'SELECT id, nik, email, full_name, address, phone, ktp, role, account_status FROM users WHERE id = ?';
+    const [response] = await db.execute(query, [id]);
+    return response[0];
 }
 
 module.exports = {
     getUserByEmail,
     createUser,
-    saveSession
+    saveSession,
+    getUserById
 };
 
 // Bagian Arvid
