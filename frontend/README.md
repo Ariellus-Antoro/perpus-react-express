@@ -1,70 +1,66 @@
-# Getting Started with Create React App
+# Frontend — Perpustakaan Digital (Vite + React + Tailwind CSS)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend ini sudah diubah dari Create React App ke **Vite**, dan stylingnya
+memakai **Tailwind CSS v4**. Backend tidak diubah sama sekali — frontend ini
+menyesuaikan ke kontrak API backend yang sudah ada:
 
-## Available Scripts
+- `POST /api/register` — body: `nik, email, password, full_name, address, phone, ktp`
+- `POST /api/login` — body: `email, password` → balasan: `{ data: { token } }`
+- `GET /api/profile` — header `Authorization: Bearer <token>` (dilindungi `authMiddleware.verifyToken`)
 
-In the project directory, you can run:
+## Menjalankan
 
-### `npm start`
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Buka `http://localhost:5173`. Pastikan backend berjalan di `http://localhost:8080`
+(`cd backend && npm run dev`) — saat development, request ke `/api/...` dari
+frontend otomatis di-proxy ke backend lewat konfigurasi `server.proxy` di
+`vite.config.js`, jadi **tidak akan kena error CORS** meskipun backend belum
+memasang middleware `cors()`.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+> Catatan: kalau nanti frontend & backend di-deploy terpisah (bukan lewat
+> proxy dev server ini), backend perlu mengaktifkan CORS supaya browser
+> mengizinkan request lintas origin. Itu di luar frontend, jadi tidak
+> disentuh di sini sesuai permintaan.
 
-### `npm test`
+## Struktur
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+src/
+  components/
+    AppShell.jsx     # layout responsif: Sidebar (desktop) + Header + BottomNav (mobile)
+    Sidebar.jsx       # navigasi desktop (md ke atas)
+    BottomNav.jsx     # navigasi mobile (di bawah md)
+    Header.jsx        # search bar di atas
+    BookCard.jsx
+    RequireAuth.jsx   # redirect ke /login kalau belum ada token
+    icons.jsx
+  pages/
+    Home.jsx
+    Buku.jsx
+    Profile.jsx
+    Login.jsx
+    Register.jsx
+  services/
+    api.js            # fetch wrapper + simpan token JWT di localStorage
+```
 
-### `npm run build`
+## Alur Login & Register
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. **Register** (`/register`) mengirim data sesuai kolom tabel `users`. Karena
+   backend membalas pesan *"menunggu verifikasi admin"*, setelah sukses user
+   diarahkan ke halaman login.
+2. **Login** (`/login`) mengirim `email` + `password`, menyimpan `token` JWT
+   dari respons ke `localStorage`.
+3. Halaman **Home / Buku / Profile** dibungkus `RequireAuth` — kalau tidak ada
+   token tersimpan, otomatis diarahkan ke `/login`.
+4. Halaman **Profile** mencoba memanggil `GET /api/profile` untuk menampilkan
+   data user. Endpoint ini di backend saat ini belum mengirim field data user
+   di response JSON-nya (hanya `message`), jadi frontend akan fallback
+   menampilkan role dari token JWT sampai backend mengirim data lengkap.
+5. **Keluar/Logout** murni membersihkan token di frontend (backend belum
+   punya endpoint logout / blacklist token).
