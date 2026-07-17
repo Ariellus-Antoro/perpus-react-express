@@ -1,16 +1,11 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
+import { books } from '../data/books';
 
-const rekomendasi = [
-  { title: 'Laut Bercerita', author: 'Leila S. Chudori', gradient: 'linear-gradient(160deg,#6d5efc,#4338ca)' },
-  { title: 'Bumi Manusia', author: 'Pramoedya A.T.', gradient: 'linear-gradient(160deg,#fb7185,#be123c)' },
-  { title: 'Filosofi Teras', author: 'Henry Manampiring', gradient: 'linear-gradient(160deg,#34d399,#047857)' },
-  { title: 'Sapiens', author: 'Yuval N. Harari', gradient: 'linear-gradient(160deg,#94a3b8,#334155)' },
-  { title: 'Atomic Habits', author: 'James Clear', gradient: 'linear-gradient(160deg,#4ade80,#15803d)' },
-  { title: 'Negeri 5 Menara', author: 'A. Fuadi', gradient: 'linear-gradient(160deg,#fbbf24,#b45309)' },
-];
+const rekomendasi = books.slice(0, 6);
 
 function Home() {
   const [query, setQuery] = useState('');
@@ -29,11 +24,13 @@ function Home() {
 
       <div className="flex items-baseline justify-between mb-3">
         <h3 className="font-semibold text-slate-800">Buku Pilihan</h3>
-        <span className="text-xs md:text-sm font-semibold text-brand cursor-pointer">Lihat semua</span>
+        <Link to="/buku" className="text-xs md:text-sm font-semibold text-brand">
+          Lihat semua
+        </Link>
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-5 mb-8">
         {rekomendasi.map((b) => (
-          <BookCard key={b.title} {...b} />
+          <BookCard key={b.id} id={b.id} title={b.title} author={b.author} gradient={b.book_cover} />
         ))}
       </div>
 
