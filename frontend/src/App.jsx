@@ -4,6 +4,7 @@ import Buku from './pages/Buku';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import BookDetail from './pages/BookDetail';
 import RequireAuth from './components/RequireAuth';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/buku" element={<Buku />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/buku/:id" element={<BookDetail />}/>
 
         {/* <Route
           path="/"
