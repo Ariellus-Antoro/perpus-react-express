@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 enum UserRole {
@@ -53,6 +53,7 @@ model Categories {
 
 model Users {
   id Int @id @default(autoincrement())
+  nik String? @db.VarChar(20)
   email String @db.VarChar(100) @unique
   password String @db.VarChar(100)
   full_name String @db.VarChar(100)
