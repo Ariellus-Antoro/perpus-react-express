@@ -1,25 +1,55 @@
+
 const authService = require('../services/authService');
 
-const login = async  (req,res,next) => {
+
+const register = async (req, res) => {
     try {
-        const {email, password} = req.body
-        const token = await authService.loginUser(email, password);
+        const userData = { ...req.body };
 
-        res.status(200).json({ status: "success", message: "Login berhasil", data: { token } });
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Foto KTP wajib diunggah!"
+            });
+        }
+
+        userData.ktp = `/uploads/ktp/${req.file.filename}`;
+
+        await authService.registerUser(userData);
+
+        res.status(201).json({
+            success: true,
+            message: "Registrasi berhasil. Silahkan tunggu persetujuan ADMIN"
+        });
+
     } catch (error) {
-        next(error)
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
     }
-}
+};
 
-const register = async (req,res,next) => {
+
+const login = async  (req,res) => {
     try{
-        await authService.registerUser(req.body);
-        res.status(200).json({ status: "success", message: "Registrasi berhasil, menunggu verifikasi admin."});
-    } catch (error) {
-        next(error)
-    }
-}
+        const {email,password} = req.body;
 
+        const {token, user} = await authService.loginUser(email,password);
+
+        res.status(200).json({
+            success: true,
+            message: 'Login Berhasil',
+            token,
+            data:user
+        });
+    }catch(error){
+        res.status(401).json({
+            success:false,
+            message:error.message
+        });
+    }
+};
 
 
 module.exports = {

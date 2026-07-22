@@ -1,16 +1,17 @@
+require('dotenv/config');
+const { PrismaClient } = require('../generated/prisma/client.ts');
+const { PrismaMariaDb } = require('@prisma/adapter-mariadb');
 
-const mysql = require('mysql2/promise');
-require('dotenv').config();
-
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
+// Buat koneksi adapter menggunakan kredensial dari environment variable
+const adapter = new PrismaMariaDb({
+    host: process.env.DB_HOST || "localhost",
+    port: Number(process.env.DB_PORT) || 3306,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    connectionLimit: 5,
 });
 
-module.exports = pool;
+const prisma = new PrismaClient({ adapter });
+
+module.exports = prisma;
