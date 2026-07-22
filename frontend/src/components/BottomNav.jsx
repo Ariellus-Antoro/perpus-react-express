@@ -9,15 +9,20 @@ const navItems = [
 
 function BottomNav() {
   return (
-    <nav className="md:hidden sticky bottom-0 inset-x-0 z-20 flex justify-around items-center bg-emerald-950 border-t border-amber-500/30 pt-2 pb-3 shadow-lg">
+    <nav 
+      style={{ backgroundColor: '#FDFBF7' }} 
+      className="md:hidden sticky bottom-0 inset-x-0 z-20 flex justify-around items-center border-t border-black pt-2 pb-3 shadow-xs"
+    >
       {navItems.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
           end={end}
           className={({ isActive }) =>
-            'flex flex-col items-center gap-1 px-5 py-1 rounded-xl text-[11px] font-semibold transition-all ' +
-            (isActive ? 'text-amber-400 font-bold' : 'text-emerald-200/60 hover:text-emerald-100')
+            'flex flex-col items-center gap-1 px-5 py-1 rounded-xl text-[11px] font-label font-semibold transition-all ' +
+            (isActive 
+              ? 'text-stone-950 bg-amber-100 font-bold border border-black shadow-xs' 
+              : 'text-stone-600 hover:text-stone-950')
           }
         >
           <Icon />

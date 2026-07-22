@@ -51,6 +51,7 @@ const emptyForm = {
   total_stock: 0,
   available_stock: 0,
   book_cover: '',
+  cover_file: null,
   description: '',
 };
 
@@ -107,7 +108,7 @@ export default function KelolaBukuAdmin() {
 
   // Open Modal untuk Edit Buku
   const handleOpenEditModal = (book) => {
-    setFormData(book);
+    setFormData({ ...book, cover_file: null });
     setIsEditing(true);
     setIsModalOpen(true);
   };
@@ -118,28 +119,58 @@ export default function KelolaBukuAdmin() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Submit Handler (Create & Update)
+  // File Change Handler untuk Cover Buku
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, cover_file: file }));
+    }
+  };
+
+  // Submit Handler (Create & Update dengan FormData agar mendukung file upload)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const data = new FormData();
+    data.append('title', formData.title);
+    data.append('author', formData.author);
+    data.append('publisher', formData.publisher || '');
+    data.append('category_id', formData.category_id);
+    data.append('year', formData.year || '');
+    data.append('total_stock', formData.total_stock);
+    data.append('description', formData.description || '');
+    
+    if (formData.cover_file) {
+      data.append('book_cover', formData.cover_file);
+    }
+
+    const authHeaderMultipart = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    };
+
     try {
       if (isEditing) {
         // UPDATE BUKU
-        await axios.put(`${API_BASE_URL}/admin/books/${formData.id}`, formData, getAuthHeader());
+        await axios.post(`${API_BASE_URL}/admin/books/${formData.id}?_method=PUT`, data, authHeaderMultipart);
         alert('Buku berhasil diperbarui!');
       } else {
         // CREATE BUKU
-        await axios.post(`${API_BASE_URL}/admin/books`, formData, getAuthHeader());
+        await axios.post(`${API_BASE_URL}/admin/books`, data, authHeaderMultipart);
         alert('Buku baru berhasil ditambahkan!');
       }
       fetchBooksAndCategories();
       setIsModalOpen(false);
     } catch (err) {
       // Demo Fallback Mode
+      const coverUrl = formData.cover_file ? URL.createObjectURL(formData.cover_file) : formData.book_cover;
       if (isEditing) {
-        setBooks((prev) => prev.map((b) => (b.id === formData.id ? { ...formData } : b)));
+        setBooks((prev) => prev.map((b) => (b.id === formData.id ? { ...formData, book_cover: coverUrl } : b)));
         alert('[Demo Mode] Berhasil mengedit data buku!');
       } else {
-        const newBook = { ...formData, id: Date.now() };
+        const newBook = { ...formData, id: Date.now(), book_cover: coverUrl };
         setBooks((prev) => [newBook, ...prev]);
         alert('[Demo Mode] Berhasil menambah buku baru!');
       }
@@ -161,106 +192,102 @@ export default function KelolaBukuAdmin() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-stone-900 font-body">
       <Header value={searchQuery} onChange={setSearchQuery} placeholder="Cari judul atau penulis buku..." />
-        
+
       {/* Banner Section */}
-      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 p-6 rounded-2xl border border-amber-500/30 shadow-md text-white flex justify-between items-center">
-        <div>
-          <span className="text-[11px] uppercase tracking-widest font-semibold text-amber-400">Manajemen Inventaris</span>
-          <h1 className="text-2xl font-bold text-amber-100 mt-0.5">Kelola Koleksi Buku</h1>
-          <p className="text-xs text-emerald-200/80">Tambah, perbarui, dan atur stok buku perpustakaan.</p>
-        </div>
+      <div>
+        <span className="text-[11px] uppercase tracking-widest font-label font-bold text-amber-800">Manajemen Inventaris</span>
+        <h1 className="text-2xl font-headline font-bold text-stone-950 mt-0.5">Kelola Koleksi Buku</h1>
+        <p className="text-xs font-body text-stone-600">Tambah, perbarui, dan atur stok buku perpustakaan.</p>
+      </div>
+
+      {/* Tabel Data Buku */}
+      <div className="flex justify-between items-center mb-4 pb-3 border-b border-black">
+        <h2 className="font-headline font-bold text-stone-950 text-lg flex items-center gap-2">
+          Daftar Buku ({filteredBooks.length})
+        </h2>
+
+        {/*button tambah*/}
         <button
           onClick={handleOpenAddModal}
-          className="bg-amber-400 hover:bg-amber-500 text-emerald-950 font-bold px-4 py-2.5 rounded-xl border border-amber-500 shadow-md transition flex items-center gap-2 text-sm"
+          className="bg-amber-100 hover:bg-amber-200 text-stone-950 font-label font-bold px-4 py-2.5 rounded-xl border border-black shadow-xs transition flex items-center gap-2 text-sm"
         >
           <span>+</span> Tambah Buku
         </button>
       </div>
 
-      {/* Tabel Data Buku */}
-      <div className="bg-white border border-emerald-900/15 rounded-2xl p-5 shadow-sm">
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-emerald-900/10">
-          <h2 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-            Daftar Buku ({filteredBooks.length})
-          </h2>
-          {loading && <span className="text-xs text-amber-600 animate-pulse font-semibold">Memuat data...</span>}
-        </div>
-
-        <div className="overflow-x-auto rounded-xl">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-emerald-950 text-amber-300 border-b border-emerald-900">
+      <div className="overflow-x-auto border border-black bg-white shadow-xs">
+        <table className="w-full text-left text-sm font-body">
+          <thead className="bg-amber-100 text-stone-950 border-b border-black font-label">
+            <tr>
+              <th className="p-3">Cover</th>
+              <th className="p-3">Judul & Penulis</th>
+              <th className="p-3">Penerbit / Tahun</th>
+              <th className="p-3">Stok (Total/Sisa)</th>
+              <th className="p-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-black/10">
+            {filteredBooks.length === 0 ? (
               <tr>
-                <th className="p-3">Cover</th>
-                <th className="p-3">Judul & Penulis</th>
-                <th className="p-3">Penerbit / Tahun</th>
-                <th className="p-3">Stok (Total/Sisa)</th>
-                <th className="p-3 text-right">Aksi</th>
+                <td colSpan="5" className="p-6 text-center text-stone-500 font-body">Tidak ada data buku ditemukan.</td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-emerald-900/10">
-              {filteredBooks.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="p-6 text-center text-emerald-800/60">Tidak ada data buku ditemukan.</td>
+            ) : (
+              filteredBooks.map((book) => (
+                <tr key={book.id} className="hover:bg-amber-50/50 transition">
+                  <td className="p-3">
+                    <img
+                      src={book.book_cover || 'https://via.placeholder.com/100x140'}
+                      alt={book.title}
+                      className="w-12 h-16 object-cover rounded-lg border border-black shadow-xs"
+                    />
+                  </td>
+                  <td className="p-3">
+                    <p className="font-bold text-stone-950">{book.title}</p>
+                    <p className="text-xs text-stone-600">Oleh: {book.author}</p>
+                  </td>
+                  <td className="p-3 text-stone-700">
+                    <p className="font-medium">{book.publisher || '-'}</p>
+                    <p className="text-xs text-stone-500">Tahun: {book.year || '-'}</p>
+                  </td>
+                  <td className="p-3">
+                    <span className="px-2.5 py-1 text-xs font-label font-bold bg-amber-200 text-stone-950 border border-black rounded-full shadow-xs">
+                      {book.total_stock} Total / <span className="text-amber-800">{book.available_stock ?? book.available} Sisa</span>
+                    </span>
+                  </td>
+                  <td className="p-3 text-right space-x-2">
+                    <button
+                      onClick={() => handleOpenEditModal(book)}
+                      className="px-3 py-1.5 text-xs font-label font-bold text-stone-950 bg-amber-100 hover:bg-amber-200 rounded-lg shadow-xs border border-black"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(book.id)}
+                      className="px-3 py-1.5 text-xs font-label font-semibold text-rose-700 border border-rose-400 rounded-lg hover:bg-rose-50 shadow-xs"
+                    >
+                      Hapus
+                    </button>
+                  </td>
                 </tr>
-              ) : (
-                filteredBooks.map((book) => (
-                  <tr key={book.id} className="hover:bg-emerald-50/50 transition">
-                    <td className="p-3">
-                      <img
-                        src={book.book_cover || 'https://via.placeholder.com/100x140'}
-                        alt={book.title}
-                        className="w-12 h-16 object-cover rounded-lg border border-amber-500/30 shadow-sm"
-                      />
-                    </td>
-                    <td className="p-3">
-                      <p className="font-bold text-emerald-950">{book.title}</p>
-                      <p className="text-xs text-emerald-800/70">Oleh: {book.author}</p>
-                    </td>
-                    <td className="p-3 text-emerald-900/80">
-                      <p className="font-medium">{book.publisher || '-'}</p>
-                      <p className="text-xs text-emerald-800/60">Tahun: {book.year || '-'}</p>
-                    </td>
-                    <td className="p-3">
-                      <span className="px-2.5 py-1 text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-full">
-                        {book.total_stock} Total / <span className="text-amber-600">{book.available_stock ?? book.available} Sisa</span>
-                      </span>
-                    </td>
-                    <td className="p-3 text-right space-x-2">
-                      <button
-                        onClick={() => handleOpenEditModal(book)}
-                        className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg shadow-sm border border-amber-500"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(book.id)}
-                        className="px-3 py-1.5 text-xs font-semibold text-rose-700 border border-rose-300 rounded-lg hover:bg-rose-50"
-                      >
-                        Hapus
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* MODAL FORM (CREATE / EDIT BUKU) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl border border-emerald-900/20 w-full max-w-xl p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 border-b border-emerald-900/10 pb-3">
-              <h3 className="text-lg font-bold text-emerald-950">
+          <div className="bg-amber-50 rounded-3xl border border-black w-full max-w-xl p-6 shadow-xl max-h-[90vh] overflow-y-auto text-stone-900 font-body">
+            <div className="flex justify-between items-center mb-4 border-b border-black pb-3">
+              <h3 className="text-lg font-headline font-bold text-stone-950">
                 {isEditing ? '✏️ Edit Data Buku' : '➕ Tambah Buku Baru'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-emerald-800/60 hover:text-emerald-950 font-bold text-xl"
+                className="text-stone-600 hover:text-stone-950 font-bold text-xl"
               >
                 &times;
               </button>
@@ -268,50 +295,50 @@ export default function KelolaBukuAdmin() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-emerald-950 mb-1">Judul Buku</label>
+                <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Judul Buku</label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Penulis</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Penulis</label>
                   <input
                     type="text"
                     name="author"
                     value={formData.author}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Penerbit</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Penerbit</label>
                   <input
                     type="text"
                     name="publisher"
                     value={formData.publisher}
                     onChange={handleInputChange}
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Kategori</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Kategori</label>
                   <select
                     name="category_id"
                     value={formData.category_id}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   >
                     <option value="">Pilih Kategori</option>
                     {categories.map((c) => (
@@ -320,17 +347,17 @@ export default function KelolaBukuAdmin() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tahun Terbit</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Tahun Terbit</label>
                   <input
                     type="text"
                     name="year"
                     value={formData.year}
                     onChange={handleInputChange}
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Total Stok</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Total Stok</label>
                   <input
                     type="number"
                     name="total_stock"
@@ -338,45 +365,43 @@ export default function KelolaBukuAdmin() {
                     onChange={handleInputChange}
                     required
                     min="0"
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-emerald-950 mb-1">URL Cover Buku (Image Link)</label>
+                <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Upload File Cover Buku</label>
                 <input
-                  type="text"
-                  name="book_cover"
-                  placeholder="https://..."
-                  value={formData.book_cover}
-                  onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="w-full text-xs text-stone-700 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-black file:text-xs file:font-semibold file:bg-amber-100 hover:file:bg-amber-200 file:cursor-pointer border border-black rounded-xl bg-white shadow-xs p-1"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-emerald-950 mb-1">Deskripsi Ringkas</label>
+                <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Deskripsi Ringkas</label>
                 <textarea
                   name="description"
                   rows="3"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                 ></textarea>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-emerald-900/10">
+              <div className="flex justify-end gap-2 pt-3 border-t border-black font-label">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-emerald-900 border border-emerald-900/20 rounded-xl hover:bg-emerald-50"
+                  className="px-4 py-2 text-xs font-semibold text-stone-800 border border-black rounded-xl hover:bg-stone-100 shadow-xs"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold text-amber-400 bg-emerald-950 border border-amber-500/40 rounded-xl hover:bg-emerald-900 shadow-md"
+                  className="px-5 py-2 text-xs font-bold text-stone-950 bg-amber-100 border border-black rounded-xl hover:bg-amber-200 shadow-xs"
                 >
                   {isEditing ? 'Simpan Perubahan' : 'Tambah Buku'}
                 </button>

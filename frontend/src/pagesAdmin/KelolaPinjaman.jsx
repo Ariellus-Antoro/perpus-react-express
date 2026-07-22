@@ -16,36 +16,36 @@ const fallbackBooks = [
 ];
 
 const fallbackBorrowings = [
-  { 
-    id: 'TRX-26072026-001', 
-    user_id: 1, 
-    book_id: 1, 
-    user_name: 'Ahmad Rizky', 
-    book_title: 'Laskar Pelangi', 
-    borrow_date: '2026-07-20', 
-    due_date: '2026-07-27', 
-    return_date: '', 
-    status: 'BORROWED' 
+  {
+    id: 'TRX-26072026-001',
+    user_id: 1,
+    book_id: 1,
+    user_name: 'Ahmad Rizky',
+    book_title: 'Laskar Pelangi',
+    borrow_date: '2026-07-20',
+    due_date: '2026-07-27',
+    return_date: '',
+    status: 'BORROWED'
   },
-  { 
-    id: 'TRX-26072026-002', 
-    user_id: 2, 
-    book_id: 2, 
-    user_name: 'Budi Santoso', 
-    book_title: 'Atomic Habits', 
-    borrow_date: '2026-07-21', 
-    due_date: '2026-07-28', 
-    return_date: '2026-07-22', 
-    status: 'RETURNED' 
+  {
+    id: 'TRX-26072026-002',
+    user_id: 2,
+    book_id: 2,
+    user_name: 'Budi Santoso',
+    book_title: 'Atomic Habits',
+    borrow_date: '2026-07-21',
+    due_date: '2026-07-28',
+    return_date: '2026-07-22',
+    status: 'RETURNED'
   },
 ];
 
 const emptyForm = {
-  id: '', // PK VARCHAR(50)
+  id: '',
   user_id: '',
   book_id: '',
-  borrow_date: new Date().toISOString().split('T')[0], // Default hari ini
-  due_date: '', 
+  borrow_date: new Date().toISOString().split('T')[0],
+  due_date: '',
   return_date: '',
   status: 'PENDING',
 };
@@ -53,11 +53,11 @@ const emptyForm = {
 export default function KelolaPinjamanAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [borrowings, setBorrowings] = useState(fallbackBorrowings);
-  
+
   // Data Master untuk Dropdown
   const [users, setUsers] = useState(fallbackUsers);
   const [books, setBooks] = useState(fallbackBooks);
-  
+
   const [loading, setLoading] = useState(false);
 
   // State Modal (Tambah & Edit)
@@ -102,7 +102,6 @@ export default function KelolaPinjamanAdmin() {
   );
 
   const handleOpenAddModal = () => {
-    // Generate otomatis ID Transaksi (bisa diedit admin jika perlu)
     const autoId = `TRX-${Date.now()}`;
     setFormData({ ...emptyForm, id: autoId });
     setIsEditing(false);
@@ -165,49 +164,47 @@ export default function KelolaPinjamanAdmin() {
   // Warna badge berdasarkan status
   const getStatusColor = (status) => {
     switch (status) {
-      case 'BORROWED': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'RETURNED': return 'bg-emerald-100 text-emerald-900 border-emerald-300';
-      case 'LATE': return 'bg-rose-100 text-rose-800 border-rose-300';
-      case 'LOST': return 'bg-slate-800 text-slate-100 border-slate-600';
-      case 'RETURN_REQUESTED': return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'REJECTED': return 'bg-red-100 text-red-800 border-red-300';
-      default: return 'bg-amber-100 text-amber-800 border-amber-300'; // PENDING
+      case 'BORROWED': return 'bg-amber-200 text-stone-950 border-black';
+      case 'RETURNED': return 'bg-amber-200 text-stone-950 border-black';
+      case 'LATE': return 'bg-rose-100 text-rose-800 border-rose-400';
+      case 'LOST': return 'bg-stone-900 text-amber-100 border-black';
+      case 'RETURN_REQUESTED': return 'bg-amber-100 text-stone-950 border-black';
+      case 'REJECTED': return 'bg-rose-100 text-rose-800 border-rose-400';
+      default: return 'bg-amber-100 text-stone-950 border-black';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-stone-900 font-body">
       {/* Header Search */}
       <Header value={searchQuery} onChange={setSearchQuery} placeholder="Cari ID transaksi, nama, atau buku..." />
-        
+
       {/* Banner Section */}
-      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 p-6 rounded-2xl border border-amber-500/30 shadow-md text-white flex justify-between items-center">
-        <div>
-          <span className="text-[11px] uppercase tracking-widest font-semibold text-amber-400">Manajemen Sirkulasi</span>
-          <h1 className="text-2xl font-bold text-amber-100 mt-0.5">Kelola Peminjaman</h1>
-          <p className="text-xs text-emerald-200/80">Atur peminjaman, tenggat waktu, dan pengembalian buku.</p>
-        </div>
-        <button
-          onClick={handleOpenAddModal}
-          className="bg-amber-400 hover:bg-amber-500 text-emerald-950 font-bold px-4 py-2.5 rounded-xl border border-amber-500 shadow-md transition flex items-center gap-2 text-sm"
-        >
-          <span>+</span> Catat Pinjaman
-        </button>
+      <div>
+        <span className="text-[11px] uppercase tracking-widest font-label font-bold text-amber-800">Manajemen Sirkulasi</span>
+        <h1 className="text-2xl font-headline font-bold text-stone-950 mt-0.5">Kelola Peminjaman</h1>
+        <p className="text-xs font-body text-stone-600">Atur peminjaman, tenggat waktu, dan pengembalian buku.</p>
       </div>
 
+
+
       {/* Tabel Data Peminjaman */}
-      <div className="bg-white border border-emerald-900/15 rounded-2xl p-5 shadow-sm">
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-emerald-900/10">
-          <h2 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+        <div className="flex justify-between items-center mb-4 pb-3 border-b border-black">
+          <h2 className="font-headline font-bold text-stone-950 text-lg flex items-center gap-2">
             Daftar Pinjaman ({filteredBorrowings.length})
           </h2>
-          {loading && <span className="text-xs text-amber-600 animate-pulse font-semibold">Memuat data...</span>}
+          {loading && <span className="text-xs font-label text-amber-800 animate-pulse font-semibold">Memuat data...</span>}
+          <button
+            onClick={handleOpenAddModal}
+            className="bg-amber-100 hover:bg-amber-200 text-stone-950 font-label font-bold px-4 py-2.5 rounded-xl border border-black shadow-xs transition flex items-center gap-2 text-sm"
+          >
+            <span>+</span> Catat Pinjaman
+          </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-emerald-950 text-amber-300 border-b border-emerald-900">
+        <div className="overflow-x-auto border border-black bg-white shadow-xs">
+          <table className="w-full text-left text-sm font-body">
+            <thead className="bg-amber-100 text-stone-950 border-b border-black font-label">
               <tr>
                 <th className="p-3">ID Transaksi</th>
                 <th className="p-3">Peminjam</th>
@@ -217,36 +214,36 @@ export default function KelolaPinjamanAdmin() {
                 <th className="p-3 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-emerald-900/10">
+            <tbody className="divide-y divide-black/10">
               {filteredBorrowings.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-6 text-center text-emerald-800/60">Tidak ada data transaksi ditemukan.</td>
+                  <td colSpan="6" className="p-6 text-center text-stone-500 font-body">Tidak ada data transaksi ditemukan.</td>
                 </tr>
               ) : (
                 filteredBorrowings.map((borrow) => (
-                  <tr key={borrow.id} className="hover:bg-emerald-50/50 transition">
-                    <td className="p-3 font-mono text-xs font-bold text-emerald-900">{borrow.id}</td>
-                    <td className="p-3 font-semibold text-emerald-950">{borrow.user_name || `User ID: ${borrow.user_id}`}</td>
-                    <td className="p-3 text-emerald-900/80">{borrow.book_title || `Book ID: ${borrow.book_id}`}</td>
+                  <tr key={borrow.id} className="hover:bg-amber-50/50 transition">
+                    <td className="p-3 font-mono text-xs font-bold text-stone-900">{borrow.id}</td>
+                    <td className="p-3 font-semibold text-stone-950">{borrow.user_name || `User ID: ${borrow.user_id}`}</td>
+                    <td className="p-3 text-stone-700">{borrow.book_title || `Book ID: ${borrow.book_id}`}</td>
                     <td className="p-3">
-                      <p className="text-emerald-900/90 font-medium">{borrow.borrow_date}</p>
+                      <p className="text-stone-900 font-medium">{borrow.borrow_date}</p>
                       <p className="text-xs text-rose-700 font-semibold mt-0.5">s/d {borrow.due_date}</p>
                     </td>
                     <td className="p-3">
-                      <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border ${getStatusColor(borrow.status)}`}>
+                      <span className={`px-2.5 py-1 text-[10px] font-label font-bold rounded-full border shadow-xs ${getStatusColor(borrow.status)}`}>
                         {borrow.status}
                       </span>
                     </td>
                     <td className="p-3 text-right space-x-2">
                       <button
                         onClick={() => handleOpenEditModal(borrow)}
-                        className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg shadow-sm border border-amber-500"
+                        className="px-3 py-1.5 text-xs font-label font-bold text-stone-950 bg-amber-100 hover:bg-amber-200 rounded-lg shadow-xs border border-black"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(borrow.id)}
-                        className="px-3 py-1.5 text-xs font-semibold text-rose-700 border border-rose-300 rounded-lg hover:bg-rose-50"
+                        className="px-3 py-1.5 text-xs font-label font-semibold text-rose-700 border border-rose-400 rounded-lg hover:bg-rose-50 shadow-xs"
                       >
                         Hapus
                       </button>
@@ -257,19 +254,18 @@ export default function KelolaPinjamanAdmin() {
             </tbody>
           </table>
         </div>
-      </div>
 
       {/* MODAL FORM (CREATE / EDIT PEMINJAMAN) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl border border-emerald-900/20 w-full max-w-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4 border-b border-emerald-900/10 pb-3">
-              <h3 className="text-lg font-bold text-emerald-950">
+          <div className="bg-amber-50 rounded-3xl border border-black w-full max-w-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto text-stone-900 font-body">
+            <div className="flex justify-between items-center mb-4 border-b border-black pb-3">
+              <h3 className="text-lg font-headline font-bold text-stone-950">
                 {isEditing ? '✏️ Edit Transaksi' : '➕ Catat Transaksi Baru'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-emerald-800/60 hover:text-emerald-950 font-bold text-xl"
+                className="text-stone-600 hover:text-stone-950 font-bold text-xl"
               >
                 &times;
               </button>
@@ -278,32 +274,31 @@ export default function KelolaPinjamanAdmin() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Row 1: ID Transaksi */}
               <div>
-                <label className="block text-xs font-semibold text-emerald-950 mb-1">ID Transaksi (VARCHAR PK)</label>
+                <label className="block text-xs font-label font-semibold text-stone-900 mb-1">ID Transaksi (VARCHAR PK)</label>
                 <input
                   type="text"
                   name="id"
                   value={formData.id}
                   onChange={handleInputChange}
                   required
-                  disabled={isEditing} // ID tidak boleh diedit jika sudah dibuat
-                  className={`w-full px-3.5 py-2 text-sm border rounded-xl focus:outline-none ${
-                    isEditing 
-                      ? 'bg-emerald-100/50 border-emerald-900/10 text-emerald-900/50 cursor-not-allowed' 
-                      : 'border-emerald-900/15 bg-emerald-50/40 focus:border-amber-500 text-emerald-950'
-                  }`}
+                  disabled={isEditing}
+                  className={`w-full px-3.5 py-2 text-sm border rounded-xl focus:outline-none shadow-xs ${isEditing
+                      ? 'bg-stone-200 border-black text-stone-500 cursor-not-allowed'
+                      : 'border-black bg-white text-stone-900'
+                    }`}
                 />
               </div>
 
               {/* Row 2: Relasi User dan Buku */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Member (Peminjam)</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Member (Peminjam)</label>
                   <select
                     name="user_id"
                     value={formData.user_id}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   >
                     <option value="">-- Pilih Member --</option>
                     {users.map(u => (
@@ -312,13 +307,13 @@ export default function KelolaPinjamanAdmin() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Buku yang Dipinjam</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Buku yang Dipinjam</label>
                   <select
                     name="book_id"
                     value={formData.book_id}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   >
                     <option value="">-- Pilih Buku --</option>
                     {books.map(b => (
@@ -331,25 +326,25 @@ export default function KelolaPinjamanAdmin() {
               {/* Row 3: Tanggal Pinjam & Tenggat */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tanggal Pinjam (borrow_date)</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Tanggal Pinjam (borrow_date)</label>
                   <input
                     type="date"
                     name="borrow_date"
                     value={formData.borrow_date}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tenggat Waktu (due_date)</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Tenggat Waktu (due_date)</label>
                   <input
                     type="date"
                     name="due_date"
                     value={formData.due_date}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
                 </div>
               </div>
@@ -357,12 +352,12 @@ export default function KelolaPinjamanAdmin() {
               {/* Row 4: Status & Tanggal Kembali (Opsional) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Status Transaksi</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Status Transaksi</label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950 font-bold"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 font-bold shadow-xs"
                   >
                     <option value="PENDING">PENDING (Menunggu Approval)</option>
                     <option value="BORROWED">BORROWED (Sedang Dipinjam)</option>
@@ -374,30 +369,30 @@ export default function KelolaPinjamanAdmin() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tanggal Dikembalikan (Opsional)</label>
+                  <label className="block text-xs font-label font-semibold text-stone-900 mb-1">Tanggal Dikembalikan (Opsional)</label>
                   <input
                     type="date"
                     name="return_date"
                     value={formData.return_date || ''}
                     onChange={handleInputChange}
-                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                    className="w-full px-3.5 py-2 text-sm border border-black rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-stone-900/20 text-stone-900 shadow-xs"
                   />
-                  <p className="text-[10px] text-emerald-800/60 mt-1">Kosongkan jika buku belum dikembalikan (NULL).</p>
+                  <p className="text-[10px] text-stone-500 mt-1">Kosongkan jika buku belum dikembalikan (NULL).</p>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-2 pt-4 border-t border-emerald-900/10 mt-4">
+              <div className="flex justify-end gap-2 pt-4 border-t border-black mt-4 font-label">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-emerald-900 border border-emerald-900/20 rounded-xl hover:bg-emerald-50"
+                  className="px-4 py-2 text-xs font-semibold text-stone-800 border border-black rounded-xl hover:bg-stone-100 shadow-xs"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold text-amber-400 bg-emerald-950 border border-amber-500/40 rounded-xl hover:bg-emerald-900 shadow-md"
+                  className="px-5 py-2 text-xs font-bold text-stone-950 bg-amber-100 border border-black rounded-xl hover:bg-amber-200 shadow-xs"
                 >
                   {isEditing ? 'Simpan Perubahan' : 'Catat Pinjaman'}
                 </button>
