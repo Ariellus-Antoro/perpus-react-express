@@ -3,6 +3,7 @@ const router = express.Router();
 
 //Import AuthRoutes
 const authRoute = require('./authRoutes');
+const userRoute = require('./userRoutes');
 
 
 router.get('/', (req, res) => {
@@ -14,6 +15,7 @@ router.get('/', (req, res) => {
 });
 
 router.use('/auth', authRoute);
+router.use('/user', userRoute);
 
 
 

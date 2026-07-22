@@ -91,8 +91,21 @@ const loginUser = async(email,password) =>{
 // }
 
 
+const logoutUser = async(token)=>{
+    if(!token){
+        throw new Error('Token tidak ditemukan atau sudah tidak valid');
+    }
+
+    await userRepo.deleteSession(token);
+    return{
+        message: "Logout berhasil"
+    };
+}
+
+
 
 module.exports = {
     loginUser,
-    registerUser
+    registerUser,
+    logoutUser
 };
