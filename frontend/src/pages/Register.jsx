@@ -24,6 +24,13 @@ function Register() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setForm((prev) => ({ ...prev, ktp: file }));
+    }
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
@@ -36,8 +43,18 @@ function Register() {
 
     setLoading(true);
     try {
-      const { confirmPassword, ...payload } = form;
-      const res = await registerUser(payload);
+      const formData = new FormData();
+      formData.append('full_name', form.full_name);
+      formData.append('nik', form.nik);
+      formData.append('email', form.email);
+      formData.append('phone', form.phone);
+      formData.append('address', form.address);
+      formData.append('password', form.password);
+      if (form.ktp) {
+        formData.append('ktp', form.ktp);
+      }
+
+      const res = await registerUser(formData);
       setSuccess(res.message || 'Registrasi berhasil, menunggu verifikasi admin.');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
@@ -148,13 +165,25 @@ function Register() {
                 <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Nomor KTP</span>
                 <input
                   type="text"
-                  name="ktp"
+                  name="ktp_number"
                   placeholder="Nomor KTP (opsional)"
-                  value={form.ktp}
                   onChange={handleChange}
                   className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
+            </div>
+
+            <div>
+              <label className="block text-xs font-label font-semibold text-stone-900 mb-1">
+                Upload Foto KTP
+              </label>
+              <input
+                type="file"
+                name="ktp"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full px-3.5 py-1.5 text-sm border border-black rounded-xl bg-white focus:outline-none text-stone-900 shadow-xs file:mr-4 file:py-1 file:px-3 file:rounded-xl file:border file:border-black file:text-xs file:font-label file:font-bold file:bg-amber-100 file:text-stone-950 hover:file:bg-amber-200 cursor-pointer"
+              />
             </div>
 
             <label className="block">
