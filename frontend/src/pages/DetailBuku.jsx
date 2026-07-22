@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 
 function DetailBuku() {
   const book = {
-    id: 1,
-    category_id: 2,
     title: 'Laskar Pelangi',
     author: 'Andrea Hirata',
     publisher: 'Bentang Pustaka',
@@ -68,14 +66,6 @@ function DetailBuku() {
 
               {/* Grid Metadata Grid */}
               <div className="grid gap-4 sm:grid-cols-2 font-body">
-                <div className="space-y-1 rounded-2xl bg-white border border-black p-4 shadow-xs">
-                  <p className="text-[11px] uppercase tracking-wider font-label text-stone-600 font-semibold">ID Buku</p>
-                  <p className="font-bold text-stone-950">{book.id}</p>
-                </div>
-                <div className="space-y-1 rounded-2xl bg-white border border-black p-4 shadow-xs">
-                  <p className="text-[11px] uppercase tracking-wider font-label text-stone-600 font-semibold">Kategori ID</p>
-                  <p className="font-bold text-stone-950">{book.category_id}</p>
-                </div>
                 <div className="space-y-1 rounded-2xl bg-white border border-black p-4 shadow-xs">
                   <p className="text-[11px] uppercase tracking-wider font-label text-stone-600 font-semibold">Penerbit</p>
                   <p className="font-bold text-stone-950">{book.publisher}</p>

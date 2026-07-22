@@ -7,6 +7,10 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import DetailBuku from './pages/DetailBuku';
+import BukuDipinjam from './pages/BukuDipinjam';
+import RiwayatPeminjaman from './pages/RiwayatPeminjaman';
+import BukuFavorit from './pages/BukuFavorit';
+import PengaturanAkun from './pages/PengaturanAkun';
 
 // Pages Admin
 import AdminDashboard from "./pagesAdmin/DasboardAdmin";
@@ -33,6 +37,10 @@ function App() {
         <Route path="/buku" element={<Buku />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/buku/:id" element={<DetailBuku />} />
+        <Route path="/dipinjam" element={<BukuDipinjam />} />
+        <Route path="/riwayat" element={<RiwayatPeminjaman />} />
+        <Route path="/favorit" element={<BukuFavorit />} />
+        <Route path="/pengaturan" element={<PengaturanAkun />} />
 
         {/* Semua halaman admin dibungkus keamanan (RequireAuth) dan tampilan sidebar (AppShellAdmin) */}
         <Route element={<AppShellAdmin />}>

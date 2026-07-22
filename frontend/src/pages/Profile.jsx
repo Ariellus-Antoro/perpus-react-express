@@ -6,10 +6,10 @@ import { ChevronIcon, LogoutIcon } from '../components/icons';
 import { getSession, clearSession, fetchProfile } from '../services/api';
 
 const menuItems = [
-  { label: 'Buku Dipinjam', hint: '2 aktif' },
-  { label: 'Riwayat Peminjaman', hint: '' },
-  { label: 'Buku Favorit', hint: '' },
-  { label: 'Pengaturan Akun', hint: '' },
+  { label: 'Buku Dipinjam', hint: '2 aktif', path: '/dipinjam' },
+  { label: 'Riwayat Peminjaman', hint: '', path: '/riwayat' },
+  { label: 'Buku Favorit', hint: '', path: '/favorit' },
+  { label: 'Pengaturan Akun', hint: '', path: '/pengaturan' },
 ];
 
 function Profile() {
@@ -57,19 +57,21 @@ function Profile() {
         <ul className="bg-amber-50/40 rounded-2xl border border-black shadow-xs overflow-hidden max-w-xl font-label">
           {menuItems.map((item) => (
             <li
-              key={item.label}
-              className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-stone-900 border-b border-black cursor-pointer hover:bg-amber-100/50 transition-colors"
-            >
-              <span>{item.label}</span>
-              <span className="flex items-center gap-2 text-stone-400">
-                {item.hint && (
-                  <span className="text-xs font-bold text-stone-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-black shadow-xs">
-                    {item.hint}
-                  </span>
-                )}
-                <ChevronIcon />
-              </span>
-            </li>
+            key={item.label}
+            onClick={() => navigate(item.path)}
+            className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-stone-900 border-b border-black cursor-pointer hover:bg-amber-100/50 transition-colors"
+          >
+            <span>{item.label}</span>
+
+            <span className="flex items-center gap-2 text-stone-400">
+              {item.hint && (
+                <span className="text-xs font-bold text-stone-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-black shadow-xs">
+                  {item.hint}
+                </span>
+              )}
+              <ChevronIcon />
+            </span>
+          </li>
           ))}
           
           {/* Logout Option */}
