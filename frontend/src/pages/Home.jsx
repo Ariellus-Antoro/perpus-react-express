@@ -5,7 +5,6 @@ import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
 import { books } from '../data/books';
 
-<<<<<<< HEAD
 const rekomendasi = [
   { title: 'Laut Bercerita', author: 'Leila S. Chudori', gradient: 'linear-gradient(160deg,#047857,#065f46)' },
   { title: 'Bumi Manusia', author: 'Pramoedya A.T.', gradient: 'linear-gradient(160deg,#065f46,#022c22)' },
@@ -14,9 +13,6 @@ const rekomendasi = [
   { title: 'Atomic Habits', author: 'James Clear', gradient: 'linear-gradient(160deg,#059669,#064e3b)' },
   { title: 'Negeri 5 Menara', author: 'A. Fuadi', gradient: 'linear-gradient(160deg,#fbbf24,#b45309)' },
 ];
-=======
-const rekomendasi = books.slice(0, 6);
->>>>>>> 4099cc5811666c48a14df0c4a8440a68fd0530b6
 
 function Home() {
   const [query, setQuery] = useState('');
@@ -34,7 +30,6 @@ function Home() {
         </p>
       </section>
 
-<<<<<<< HEAD
       {/* Section Header */}
       <div className="flex items-baseline justify-between mb-3 border-b border-emerald-900/10 pb-2">
         <h3 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
@@ -44,13 +39,6 @@ function Home() {
         <span className="text-xs md:text-sm font-semibold text-amber-600 hover:text-amber-700 cursor-pointer transition">
           Lihat semua &rarr;
         </span>
-=======
-      <div className="flex items-baseline justify-between mb-3">
-        <h3 className="font-semibold text-slate-800">Buku Pilihan</h3>
-        <Link to="/buku" className="text-xs md:text-sm font-semibold text-brand">
-          Lihat semua
-        </Link>
->>>>>>> 4099cc5811666c48a14df0c4a8440a68fd0530b6
       </div>
 
       {/* Grid Book Cards */}
