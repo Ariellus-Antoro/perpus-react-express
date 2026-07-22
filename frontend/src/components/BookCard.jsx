@@ -1,14 +1,18 @@
 function BookCard({ title, author, gradient }) {
   return (
-    <div className="flex flex-col min-w-0">
+    <div className="flex flex-col min-w-0 group cursor-pointer">
       <div
-        className="aspect-[3/4.2] rounded-xl flex items-end p-2 shadow-md shadow-slate-900/10"
+        className="aspect-[3/4.2] rounded-xl flex items-end p-2.5 shadow-md border border-amber-500/20 transition-transform duration-200 group-hover:-translate-y-1"
         style={{ background: gradient }}
       >
-        <span className="text-white/90 text-[11px] font-bold leading-snug">{title}</span>
+        <span className="text-amber-100 text-[11px] font-bold leading-snug drop-shadow-md">
+          {title}
+        </span>
       </div>
-      <p className="mt-2 text-sm font-semibold text-slate-800 truncate">{title}</p>
-      <p className="text-xs text-slate-400 truncate">{author}</p>
+      <p className="mt-2 text-sm font-bold text-emerald-950 truncate group-hover:text-amber-600 transition-colors">
+        {title}
+      </p>
+      <p className="text-xs text-emerald-800/70 truncate">{author}</p>
     </div>
   );
 }

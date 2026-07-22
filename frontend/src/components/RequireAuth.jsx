@@ -1,12 +1,17 @@
-import { Navigate } from 'react-router-dom';
-import { getSession } from '../services/api';
+import { Navigate, Outlet } from 'react-router-dom';
+import { getSession } from '../services/api'; // Sesuaikan lokasi fungsi session-mu
 
-function RequireAuth({ children }) {
-  const { token } = getSession();
-  if (!token) {
+export default function RequireAuth() {
+  const session = getSession();
+
+  if (!session) {
     return <Navigate to="/login" replace />;
   }
-  return children;
-}
 
-export default RequireAuth;
+  if (session.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  // Jika lolos (Admin), tampilkan halaman admin
+  return <Outlet />;
+}

@@ -1,0 +1,417 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Header from '../components/Header';
+
+const API_BASE_URL = 'http://localhost:8000/api';
+
+//Data Dummy
+const fallbackMembers = [
+  { id: 1, full_name: 'Ahmad Rizky', nik: '3374012304900001', email: 'ahmad@gmail.com', phone: '081234567890', role: 'MEMBER', account_status: 'APPROVED', created_at: '2026-07-10' },
+  { id: 2, full_name: 'Budi Santoso', nik: '3374012304900002', email: 'budi@gmail.com', phone: '081298765432', role: 'MEMBER', account_status: 'PENDING', created_at: '2026-07-20' },
+  { id: 3, full_name: 'Samuel ', nik: '6720232070000000', email: 'samuel@admin.com', phone: '089999999999', role: 'ADMIN', account_status: 'APPROVED', created_at: '2026-07-21' },
+  { id: 3, full_name: 'faris', nik: '6720232010000000', email: 'faris@admin.com', phone: '089999999999', role: 'ADMIN', account_status: 'APPROVED', created_at: '2026-07-22' },
+  { id: 3, full_name: 'ariel', nik: '6720231070000000', email: 'aril@admin.com', phone: '089999999999', role: 'ADMIN', account_status: 'APPROVED', created_at: '2026-07-23' },
+];
+
+const emptyForm = {
+  id: null,
+  nik: '',
+  email: '',
+  password: '',
+  full_name: '',
+  address: '',
+  phone: '',
+  ktp: null,
+  role: 'MEMBER',
+  account_status: 'APPROVED',
+};
+
+export default function KelolaMemberAdmin() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [members, setMembers] = useState(fallbackMembers);
+  const [loading, setLoading] = useState(false);
+
+  // State Modal (Tambah & Edit)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState(emptyForm);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return { 
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        // Hapus Content-Type JSON karena kita akan pakai FormData (otomatis di-set browser jadi multipart/form-data)
+      } 
+    };
+  };
+
+  const fetchMembers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/admin/users`, getAuthHeader());
+      if (res.data) setMembers(res.data);
+    } catch (err) {
+      console.warn("Backend offline, menggunakan data fallback:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  const filteredMembers = members.filter(
+    (m) =>
+      m.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.nik.includes(searchQuery) ||
+      m.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleOpenAddModal = () => {
+    setFormData(emptyForm);
+    setIsEditing(false);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (member) => {
+    setFormData({ ...member, password: '', ktp: null }); // KTP dikosongkan saat edit, kecuali user upload ulang
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  // Handler khusus untuk input teks biasa
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handler khusus untuk upload file KTP
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, ktp: file }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Mengubah data ke bentuk FormData untuk support upload file
+    const payload = new FormData();
+    payload.append('full_name', formData.full_name);
+    payload.append('nik', formData.nik);
+    payload.append('email', formData.email);
+    payload.append('address', formData.address || '');
+    payload.append('phone', formData.phone || '');
+    payload.append('role', formData.role);
+    payload.append('account_status', formData.account_status);
+    
+    // Password hanya dikirim jika diisi (opsional saat edit, wajib saat tambah)
+    if (formData.password) {
+      payload.append('password', formData.password);
+    }
+    
+    // KTP hanya dilampirkan jika ada file yang dipilih
+    if (formData.ktp) {
+      payload.append('ktp', formData.ktp);
+    }
+
+    try {
+      if (isEditing) {
+        // Catatan: Di Laravel/Express kadang UPDATE pakai POST + method spoofing kalau ada file upload
+        // payload.append('_method', 'PUT'); 
+        await axios.post(`${API_BASE_URL}/admin/users/${formData.id}?_method=PUT`, payload, getAuthHeader());
+        alert('Data pengguna berhasil diperbarui!');
+      } else {
+        await axios.post(`${API_BASE_URL}/admin/users`, payload, getAuthHeader());
+        alert('Pengguna baru berhasil ditambahkan!');
+      }
+      fetchMembers();
+      setIsModalOpen(false);
+    } catch (err) {
+      // Demo Fallback Mode
+      if (isEditing) {
+        setMembers((prev) => prev.map((m) => (m.id === formData.id ? { ...formData, ktp: 'foto-terupdate.jpg' } : m)));
+        alert('[Demo Mode] Berhasil mengedit data pengguna!');
+      } else {
+        const newMember = {
+          ...formData,
+          id: Date.now(),
+          ktp: formData.ktp ? formData.ktp.name : null, // Cuma demo, di UI nampilin nama file-nya
+          created_at: new Date().toISOString().split('T')[0],
+        };
+        setMembers((prev) => [newMember, ...prev]);
+        alert('[Demo Mode] Berhasil menambah pengguna baru!');
+      }
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus / memblokir pengguna ini?')) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/admin/users/${id}`, getAuthHeader());
+      alert('Pengguna berhasil dihapus!');
+      fetchMembers();
+    } catch (err) {
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+      alert(`[Demo Mode] Pengguna dengan ID ${id} berhasil dihapus`);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Header value={searchQuery} onChange={setSearchQuery} placeholder="Cari nama, NIK, atau email..." />
+        
+      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 p-6 rounded-2xl border border-amber-500/30 shadow-md text-white flex justify-between items-center">
+        <div>
+          <span className="text-[11px] uppercase tracking-widest font-semibold text-amber-400">Manajemen Pengguna (Full Access)</span>
+          <h1 className="text-2xl font-bold text-amber-100 mt-0.5">Kelola Data Pengguna</h1>
+          <p className="text-xs text-emerald-200/80">Pantau, perbarui, dan atur detail profil akun seluruh pengguna.</p>
+        </div>
+        <button
+          onClick={handleOpenAddModal}
+          className="bg-amber-400 hover:bg-amber-500 text-emerald-950 font-bold px-4 py-2.5 rounded-xl border border-amber-500 shadow-md transition flex items-center gap-2 text-sm"
+        >
+          <span>+</span> Tambah Pengguna
+        </button>
+      </div>
+
+      <div className="bg-white border border-emerald-900/15 rounded-2xl p-5 shadow-sm">
+        <div className="flex justify-between items-center mb-4 pb-3 border-b border-emerald-900/10">
+          <h2 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+            Daftar Pengguna ({filteredMembers.length})
+          </h2>
+          {loading && <span className="text-xs text-amber-600 animate-pulse font-semibold">Memuat data...</span>}
+        </div>
+
+        <div className="overflow-x-auto rounded-xl">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-emerald-950 text-amber-300 border-b border-emerald-900">
+              <tr>
+                <th className="p-3">Info Pengguna</th>
+                <th className="p-3">Kontak & Alamat</th>
+                <th className="p-3">Role</th>
+                <th className="p-3">Status Akun</th>
+                <th className="p-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-emerald-900/10">
+              {filteredMembers.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-6 text-center text-emerald-800/60">Tidak ada data ditemukan.</td>
+                </tr>
+              ) : (
+                filteredMembers.map((member) => (
+                  <tr key={member.id} className="hover:bg-emerald-50/50 transition">
+                    <td className="p-3">
+                      <p className="font-bold text-emerald-950">{member.full_name}</p>
+                      <p className="text-xs font-mono text-emerald-800/70">NIK: {member.nik}</p>
+                    </td>
+                    <td className="p-3">
+                      <p className="text-emerald-900/90 font-medium">{member.email}</p>
+                      <p className="text-xs text-emerald-800/70">{member.phone || '-'}</p>
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 text-[10px] font-bold rounded-lg border ${
+                        member.role === 'ADMIN' ? 'bg-amber-100 text-amber-900 border-amber-400' : 'bg-slate-100 text-slate-700 border-slate-300'
+                      }`}>
+                        {member.role || 'MEMBER'}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <span
+                        className={`px-2.5 py-1 text-[11px] font-bold rounded-full border ${
+                          member.account_status === 'APPROVED' || member.account_status === 'AKTIF'
+                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            : member.account_status === 'PENDING'
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : 'bg-rose-100 text-rose-800 border-rose-300'
+                        }`}
+                      >
+                        {member.account_status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      <button
+                        onClick={() => handleOpenEditModal(member)}
+                        className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg shadow-sm border border-amber-500"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member.id)}
+                        className="px-3 py-1.5 text-xs font-semibold text-rose-700 border border-rose-300 rounded-lg hover:bg-rose-50"
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* MODAL FORM (CREATE / EDIT PENGGUNA) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl border border-emerald-900/20 w-full max-w-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 border-b border-emerald-900/10 pb-3">
+              <h3 className="text-lg font-bold text-emerald-950">
+                {isEditing ? '✏️ Edit Data Pengguna' : '➕ Tambah Pengguna Baru'}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-emerald-800/60 hover:text-emerald-950 font-bold text-xl"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Tambahkan encType multipart/form-data */}
+            <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Nama Lengkap (full_name)</label>
+                  <input
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Nomor Induk Kependudukan (nik)</label>
+                  <input
+                    type="text"
+                    name="nik"
+                    value={formData.nik}
+                    onChange={handleInputChange}
+                    required
+                    maxLength="20"
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Nomor HP (phone)</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    maxLength="15"
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-emerald-950 mb-1">Alamat Lengkap (address)</label>
+                <textarea
+                  name="address"
+                  rows="2"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                ></textarea>
+              </div>
+
+              {/* BARIS KTP & PASSWORD (DI SINI PERUBAHANNYA) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">
+                    Upload Foto KTP {isEditing && <span className="text-emerald-700/60 font-normal">(Abaikan jika tidak ingin mengubah)</span>}
+                  </label>
+                  <input
+                    type="file"
+                    name="ktp"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950 file:mr-4 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-amber-400 file:text-amber-950 hover:file:bg-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder={isEditing ? "Kosongkan jika tidak ingin diubah" : "Masukkan password awal"}
+                    value={formData.password || ''}
+                    onChange={handleInputChange}
+                    required={!isEditing}
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Role Akun</label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950 font-semibold"
+                  >
+                    <option value="MEMBER">MEMBER</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Status Akun</label>
+                  <select
+                    name="account_status"
+                    value={formData.account_status}
+                    onChange={handleInputChange}
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950 font-semibold"
+                  >
+                    <option value="PENDING">PENDING</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="REJECTED">REJECTED</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-emerald-900/10 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-emerald-900 border border-emerald-900/20 rounded-xl hover:bg-emerald-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-xs font-bold text-amber-400 bg-emerald-950 border border-amber-500/40 rounded-xl hover:bg-emerald-900 shadow-md"
+                >
+                  {isEditing ? 'Simpan Perubahan' : 'Tambah Pengguna'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

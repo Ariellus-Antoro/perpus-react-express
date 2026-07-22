@@ -1,0 +1,411 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Header from '../components/Header';
+
+const API_BASE_URL = 'http://localhost:8000/api';
+
+// --- FALLBACK DATA DEMO ---
+const fallbackUsers = [
+  { id: 1, full_name: 'Ahmad Rizky', nik: '3374012304900001' },
+  { id: 2, full_name: 'Budi Santoso', nik: '3374012304900002' },
+];
+
+const fallbackBooks = [
+  { id: 1, title: 'Laskar Pelangi', available_stock: 5 },
+  { id: 2, title: 'Atomic Habits', available_stock: 3 },
+];
+
+const fallbackBorrowings = [
+  { 
+    id: 'TRX-26072026-001', 
+    user_id: 1, 
+    book_id: 1, 
+    user_name: 'Ahmad Rizky', 
+    book_title: 'Laskar Pelangi', 
+    borrow_date: '2026-07-20', 
+    due_date: '2026-07-27', 
+    return_date: '', 
+    status: 'BORROWED' 
+  },
+  { 
+    id: 'TRX-26072026-002', 
+    user_id: 2, 
+    book_id: 2, 
+    user_name: 'Budi Santoso', 
+    book_title: 'Atomic Habits', 
+    borrow_date: '2026-07-21', 
+    due_date: '2026-07-28', 
+    return_date: '2026-07-22', 
+    status: 'RETURNED' 
+  },
+];
+
+const emptyForm = {
+  id: '', // PK VARCHAR(50)
+  user_id: '',
+  book_id: '',
+  borrow_date: new Date().toISOString().split('T')[0], // Default hari ini
+  due_date: '', 
+  return_date: '',
+  status: 'PENDING',
+};
+
+export default function KelolaPinjamanAdmin() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [borrowings, setBorrowings] = useState(fallbackBorrowings);
+  
+  // Data Master untuk Dropdown
+  const [users, setUsers] = useState(fallbackUsers);
+  const [books, setBooks] = useState(fallbackBooks);
+  
+  const [loading, setLoading] = useState(false);
+
+  // State Modal (Tambah & Edit)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState(emptyForm);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
+  // Fetch Data Peminjaman beserta Data Master User & Buku
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [resBorrow, resUsers, resBooks] = await Promise.all([
+        axios.get(`${API_BASE_URL}/admin/borrowings`, getAuthHeader()),
+        axios.get(`${API_BASE_URL}/admin/users`, getAuthHeader()),
+        axios.get(`${API_BASE_URL}/admin/books`, getAuthHeader()),
+      ]);
+      if (resBorrow.data) setBorrowings(resBorrow.data);
+      if (resUsers.data) setUsers(resUsers.data);
+      if (resBooks.data) setBooks(resBooks.data);
+    } catch (err) {
+      console.warn("Backend offline, menggunakan data fallback:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Pencarian berdasarkan ID Transaksi, Nama Peminjam, atau Judul Buku
+  const filteredBorrowings = borrowings.filter(
+    (b) =>
+      b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (b.user_name && b.user_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (b.book_title && b.book_title.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const handleOpenAddModal = () => {
+    // Generate otomatis ID Transaksi (bisa diedit admin jika perlu)
+    const autoId = `TRX-${Date.now()}`;
+    setFormData({ ...emptyForm, id: autoId });
+    setIsEditing(false);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (borrow) => {
+    setFormData(borrow);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (isEditing) {
+        await axios.put(`${API_BASE_URL}/admin/borrowings/${formData.id}`, formData, getAuthHeader());
+        alert('Data transaksi peminjaman berhasil diperbarui!');
+      } else {
+        await axios.post(`${API_BASE_URL}/admin/borrowings`, formData, getAuthHeader());
+        alert('Transaksi peminjaman baru berhasil ditambahkan!');
+      }
+      fetchData();
+      setIsModalOpen(false);
+    } catch (err) {
+      // Demo Fallback Mode
+      if (isEditing) {
+        setBorrowings((prev) => prev.map((b) => (b.id === formData.id ? { ...formData, user_name: users.find(u => u.id == formData.user_id)?.full_name, book_title: books.find(bk => bk.id == formData.book_id)?.title } : b)));
+        alert('[Demo Mode] Berhasil mengedit transaksi!');
+      } else {
+        const newBorrow = {
+          ...formData,
+          user_name: users.find(u => u.id == formData.user_id)?.full_name || 'User Dummy',
+          book_title: books.find(bk => bk.id == formData.book_id)?.title || 'Buku Dummy',
+        };
+        setBorrowings((prev) => [newBorrow, ...prev]);
+        alert('[Demo Mode] Berhasil menambah transaksi baru!');
+      }
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus data transaksi ini secara permanen?')) return;
+    try {
+      await axios.delete(`${API_BASE_URL}/admin/borrowings/${id}`, getAuthHeader());
+      alert('Data transaksi berhasil dihapus!');
+      fetchData();
+    } catch (err) {
+      setBorrowings((prev) => prev.filter((b) => b.id !== id));
+      alert(`[Demo Mode] Transaksi dengan ID ${id} berhasil dihapus`);
+    }
+  };
+
+  // Warna badge berdasarkan status
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'BORROWED': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'RETURNED': return 'bg-emerald-100 text-emerald-900 border-emerald-300';
+      case 'LATE': return 'bg-rose-100 text-rose-800 border-rose-300';
+      case 'LOST': return 'bg-slate-800 text-slate-100 border-slate-600';
+      case 'RETURN_REQUESTED': return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'REJECTED': return 'bg-red-100 text-red-800 border-red-300';
+      default: return 'bg-amber-100 text-amber-800 border-amber-300'; // PENDING
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header Search */}
+      <Header value={searchQuery} onChange={setSearchQuery} placeholder="Cari ID transaksi, nama, atau buku..." />
+        
+      {/* Banner Section */}
+      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 p-6 rounded-2xl border border-amber-500/30 shadow-md text-white flex justify-between items-center">
+        <div>
+          <span className="text-[11px] uppercase tracking-widest font-semibold text-amber-400">Manajemen Sirkulasi</span>
+          <h1 className="text-2xl font-bold text-amber-100 mt-0.5">Kelola Peminjaman</h1>
+          <p className="text-xs text-emerald-200/80">Atur peminjaman, tenggat waktu, dan pengembalian buku.</p>
+        </div>
+        <button
+          onClick={handleOpenAddModal}
+          className="bg-amber-400 hover:bg-amber-500 text-emerald-950 font-bold px-4 py-2.5 rounded-xl border border-amber-500 shadow-md transition flex items-center gap-2 text-sm"
+        >
+          <span>+</span> Catat Pinjaman
+        </button>
+      </div>
+
+      {/* Tabel Data Peminjaman */}
+      <div className="bg-white border border-emerald-900/15 rounded-2xl p-5 shadow-sm">
+        <div className="flex justify-between items-center mb-4 pb-3 border-b border-emerald-900/10">
+          <h2 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+            Daftar Pinjaman ({filteredBorrowings.length})
+          </h2>
+          {loading && <span className="text-xs text-amber-600 animate-pulse font-semibold">Memuat data...</span>}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-emerald-950 text-amber-300 border-b border-emerald-900">
+              <tr>
+                <th className="p-3">ID Transaksi</th>
+                <th className="p-3">Peminjam</th>
+                <th className="p-3">Judul Buku</th>
+                <th className="p-3">Tgl Pinjam - Tenggat</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-emerald-900/10">
+              {filteredBorrowings.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-emerald-800/60">Tidak ada data transaksi ditemukan.</td>
+                </tr>
+              ) : (
+                filteredBorrowings.map((borrow) => (
+                  <tr key={borrow.id} className="hover:bg-emerald-50/50 transition">
+                    <td className="p-3 font-mono text-xs font-bold text-emerald-900">{borrow.id}</td>
+                    <td className="p-3 font-semibold text-emerald-950">{borrow.user_name || `User ID: ${borrow.user_id}`}</td>
+                    <td className="p-3 text-emerald-900/80">{borrow.book_title || `Book ID: ${borrow.book_id}`}</td>
+                    <td className="p-3">
+                      <p className="text-emerald-900/90 font-medium">{borrow.borrow_date}</p>
+                      <p className="text-xs text-rose-700 font-semibold mt-0.5">s/d {borrow.due_date}</p>
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border ${getStatusColor(borrow.status)}`}>
+                        {borrow.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      <button
+                        onClick={() => handleOpenEditModal(borrow)}
+                        className="px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-400 hover:bg-amber-500 rounded-lg shadow-sm border border-amber-500"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(borrow.id)}
+                        className="px-3 py-1.5 text-xs font-semibold text-rose-700 border border-rose-300 rounded-lg hover:bg-rose-50"
+                      >
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* MODAL FORM (CREATE / EDIT PEMINJAMAN) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl border border-emerald-900/20 w-full max-w-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 border-b border-emerald-900/10 pb-3">
+              <h3 className="text-lg font-bold text-emerald-950">
+                {isEditing ? '✏️ Edit Transaksi' : '➕ Catat Transaksi Baru'}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-emerald-800/60 hover:text-emerald-950 font-bold text-xl"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Row 1: ID Transaksi */}
+              <div>
+                <label className="block text-xs font-semibold text-emerald-950 mb-1">ID Transaksi (VARCHAR PK)</label>
+                <input
+                  type="text"
+                  name="id"
+                  value={formData.id}
+                  onChange={handleInputChange}
+                  required
+                  disabled={isEditing} // ID tidak boleh diedit jika sudah dibuat
+                  className={`w-full px-3.5 py-2 text-sm border rounded-xl focus:outline-none ${
+                    isEditing 
+                      ? 'bg-emerald-100/50 border-emerald-900/10 text-emerald-900/50 cursor-not-allowed' 
+                      : 'border-emerald-900/15 bg-emerald-50/40 focus:border-amber-500 text-emerald-950'
+                  }`}
+                />
+              </div>
+
+              {/* Row 2: Relasi User dan Buku */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Member (Peminjam)</label>
+                  <select
+                    name="user_id"
+                    value={formData.user_id}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  >
+                    <option value="">-- Pilih Member --</option>
+                    {users.map(u => (
+                      <option key={u.id} value={u.id}>{u.full_name} (NIK: {u.nik})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Buku yang Dipinjam</label>
+                  <select
+                    name="book_id"
+                    value={formData.book_id}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  >
+                    <option value="">-- Pilih Buku --</option>
+                    {books.map(b => (
+                      <option key={b.id} value={b.id}>{b.title} (Sisa: {b.available_stock})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 3: Tanggal Pinjam & Tenggat */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tanggal Pinjam (borrow_date)</label>
+                  <input
+                    type="date"
+                    name="borrow_date"
+                    value={formData.borrow_date}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tenggat Waktu (due_date)</label>
+                  <input
+                    type="date"
+                    name="due_date"
+                    value={formData.due_date}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                </div>
+              </div>
+
+              {/* Row 4: Status & Tanggal Kembali (Opsional) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Status Transaksi</label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950 font-bold"
+                  >
+                    <option value="PENDING">PENDING (Menunggu Approval)</option>
+                    <option value="BORROWED">BORROWED (Sedang Dipinjam)</option>
+                    <option value="RETURN_REQUESTED">RETURN REQUESTED (Minta Kembali)</option>
+                    <option value="RETURNED">RETURNED (Sudah Dikembalikan)</option>
+                    <option value="LATE">LATE (Terlambat)</option>
+                    <option value="LOST">LOST (Hilang)</option>
+                    <option value="REJECTED">REJECTED (Ditolak)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-emerald-950 mb-1">Tanggal Dikembalikan (Opsional)</label>
+                  <input
+                    type="date"
+                    name="return_date"
+                    value={formData.return_date || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-3.5 py-2 text-sm border border-emerald-900/15 rounded-xl bg-emerald-50/40 focus:border-amber-500 focus:outline-none text-emerald-950"
+                  />
+                  <p className="text-[10px] text-emerald-800/60 mt-1">Kosongkan jika buku belum dikembalikan (NULL).</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2 pt-4 border-t border-emerald-900/10 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-emerald-900 border border-emerald-900/20 rounded-xl hover:bg-emerald-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-xs font-bold text-amber-400 bg-emerald-950 border border-amber-500/40 rounded-xl hover:bg-emerald-900 shadow-md"
+                >
+                  {isEditing ? 'Simpan Perubahan' : 'Catat Pinjaman'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
