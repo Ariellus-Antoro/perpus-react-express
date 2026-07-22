@@ -1,4 +1,6 @@
-function BookCard({ title, author, gradient }) {
+import { Link } from 'react-router-dom';
+
+function BookCard({ id, title, author, gradient }) {
   return (
     <div className="flex flex-col min-w-0 group cursor-pointer">
       <div
