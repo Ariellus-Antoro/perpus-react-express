@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { HomeIcon, BookIcon, CategoryIcon, MemberIcon, LogoutIcon } from './icons';
+import { HomeIcon, BookIcon, CategoryIcon, MemberIcon, LogoutIcon, VerifikasiIcon } from './icons';
 import { clearSession } from '../services/api';
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/admin/kategori', label: 'Kelola Kategori', icon: CategoryIcon },
   { to: '/admin/member', label: 'Kelola Member', icon: MemberIcon },
   { to: '/admin/pinjaman', label: 'Pinjaman Buku', icon: BookIcon },
+  { to: '/admin/verifikasi', label: 'Verifikasi Member', icon: VerifikasiIcon },
 ];
 
 export default function SidebarAdmin() {

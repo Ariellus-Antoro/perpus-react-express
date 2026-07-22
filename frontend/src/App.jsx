@@ -14,6 +14,7 @@ import KelolaBukuAdmin from "./pagesAdmin/KelolaBuku";
 import KelolaKategoriAdmin from "./pagesAdmin/KelolaKategori";
 import KelolaMemberAdmin from "./pagesAdmin/KelolaMember";
 import KelolaPinjamanAdmin from "./pagesAdmin/KelolaPinjaman";
+import KelolaVerifikasiAdmin from "./pagesAdmin/VerifikasiAdmin";
 
 // Components Pelindung & Layout
 import RequireAuth from './components/RequireAuth';
@@ -33,7 +34,6 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/buku/:id" element={<DetailBuku />} />
 
-        {/* 🔒 RUTE ADMIN */}
         {/* Semua halaman admin dibungkus keamanan (RequireAuth) dan tampilan sidebar (AppShellAdmin) */}
         <Route element={<AppShellAdmin />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -41,6 +41,7 @@ function App() {
           <Route path="/admin/kategori" element={<KelolaKategoriAdmin />} />
           <Route path="/admin/member" element={<KelolaMemberAdmin />} />
           <Route path="/admin/pinjaman" element={<KelolaPinjamanAdmin />} />
+          <Route path="/admin/verifikasi" element={<KelolaVerifikasiAdmin />} />
         </Route>
 
       </Routes>

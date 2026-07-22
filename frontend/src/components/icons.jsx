@@ -67,3 +67,10 @@ export const MemberIcon = (props) => (
     <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+export const VerifikasiIcon = (props) => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="12" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
