@@ -19,42 +19,56 @@ function Login() {
     try {
       const res = await loginUser(form);
       saveSession(res.data.token);
-      navigate('/');
+      
+      if (res.data?.user?.role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Login gagal. Silakan periksa kredensial Anda.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-100">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand to-violet-700 text-white flex-col justify-center px-16">
-        <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center font-bold text-xl mb-6">
+    <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen flex text-stone-900">
+      {/* Left Banner Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-amber-50/80 text-stone-900 flex-col justify-center px-16 border-r border-black relative overflow-hidden">
+        {/* Element Aksen Dekoratif */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-200/50 blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-amber-300/30 blur-3xl pointer-events-none"></div>
+
+        <div className="w-14 h-14 rounded-2xl bg-amber-100 border border-black flex items-center justify-center font-headline font-bold text-2xl text-stone-950 mb-6 shadow-xs">
           P
         </div>
-        <h1 className="text-3xl font-bold mb-3">Perpustakaan Digital</h1>
-        <p className="text-white/80 max-w-sm">
-          Pinjam buku, kelola koleksi favorit, dan pantau riwayat peminjamanmu dalam satu tempat.
+        <span className="text-xs uppercase tracking-widest font-label font-bold text-amber-800 mb-1">
+          E-Library Portal
+        </span>
+        <h1 className="text-3xl font-headline font-bold mb-3 text-stone-950">Perpustakaan Digital</h1>
+        <p className="font-body text-stone-700 max-w-sm leading-relaxed">
+          Pinjam buku, kelola koleksi favorit, dan pantau riwayat peminjamanmu dalam satu platform eksklusif.
         </p>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-sm">
+      {/* Right Form Section */}
+      <div className="flex-1 flex items-center justify-center px-6 py-10" style={{ backgroundColor: '#FDFBF7' }}>
+        <div className="w-full max-w-sm bg-amber-50/40 p-8 rounded-3xl border border-black shadow-xs">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-800 mb-1">Selamat Datang</h2>
-            <p className="text-sm text-slate-500">Masuk untuk melanjutkan ke Perpustakaan Digital</p>
+            <h2 className="text-2xl font-headline font-bold text-stone-950 mb-1">Selamat Datang</h2>
+            <p className="text-sm font-body text-stone-600">Masuk untuk melanjutkan ke Perpustakaan Digital</p>
           </div>
 
           {error && (
-            <div className="mb-5 rounded-xl bg-red-50 text-red-600 text-sm font-medium px-4 py-3">
+            <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-400 text-rose-700 text-sm font-medium px-4 py-3 shadow-xs">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 font-body">
             <label className="block">
-              <span className="block text-sm font-semibold text-slate-600 mb-1.5">Email</span>
+              <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Email</span>
               <input
                 type="email"
                 name="email"
@@ -62,12 +76,12 @@ function Login() {
                 value={form.email}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
               />
             </label>
 
             <label className="block">
-              <span className="block text-sm font-semibold text-slate-600 mb-1.5">Password</span>
+              <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Password</span>
               <input
                 type="password"
                 name="password"
@@ -75,22 +89,22 @@ function Login() {
                 value={form.password}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
               />
             </label>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand text-white font-semibold py-3 text-sm mt-2 disabled:opacity-60"
+              className="w-full rounded-2xl bg-amber-100 hover:bg-amber-200 border border-black text-stone-950 font-label font-bold py-3 text-sm mt-2 shadow-xs transition-all disabled:opacity-60"
             >
-              {loading ? 'Memproses...' : 'Masuk'}
+              {loading ? 'Memproses...' : 'Masuk Akun'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p className="text-center text-sm font-body text-stone-600 mt-6">
             Belum punya akun?{' '}
-            <Link to="/register" className="text-brand font-semibold">
+            <Link to="/register" className="font-label text-stone-950 hover:underline font-bold transition">
               Daftar di sini
             </Link>
           </p>

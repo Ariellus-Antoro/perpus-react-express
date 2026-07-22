@@ -9,6 +9,7 @@ const bookRoutes = require("./book_routes");
 
 //Import AuthRoutes
 const authRoute = require('./authRoutes');
+const userRoute = require('./userRoutes');
 
 
 router.get("/", (req, res) => {
@@ -30,6 +31,7 @@ router.post("/register", authController.register);
 
 router.get("/profile", authMiddleware.verifyToken, userController.getProfile);
 router.use('/auth', authRoute);
+router.use('/user', userRoute);
 
 
 module.exports = router;

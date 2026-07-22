@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 @theme {
+  --font-headline: "Playfair Display", serif;
+  --font-body: "Source Serif 4", serif;
+  --font-label: "Hanken Grotesk", sans-serif;
   --color-brand: #4f46e5;
   --color-brand-dark: #4338ca;
 }
@@ -12,5 +15,6 @@ body,
 }
 
 body {
-  @apply bg-slate-100 text-slate-900;
+  background-color: #FDFBF7;
+  color: #1c1917;
 }

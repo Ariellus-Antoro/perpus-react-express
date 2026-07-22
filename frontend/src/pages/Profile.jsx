@@ -6,10 +6,10 @@ import { ChevronIcon, LogoutIcon } from '../components/icons';
 import { getSession, clearSession, fetchProfile } from '../services/api';
 
 const menuItems = [
-  { label: 'Buku Dipinjam', hint: '2 aktif' },
-  { label: 'Riwayat Peminjaman', hint: '' },
-  { label: 'Buku Favorit', hint: '' },
-  { label: 'Pengaturan Akun', hint: '' },
+  { label: 'Buku Dipinjam', hint: '2 aktif', path: '/dipinjam' },
+  { label: 'Riwayat Peminjaman', hint: '', path: '/riwayat' },
+  { label: 'Buku Favorit', hint: '', path: '/favorit' },
+  { label: 'Pengaturan Akun', hint: '', path: '/pengaturan' },
 ];
 
 function Profile() {
@@ -21,9 +21,6 @@ function Profile() {
     if (!token) return;
     fetchProfile(token)
       .then((res) => {
-        // Backend saat ini hanya mengembalikan { status, message } tanpa field
-        // data user. Kalau suatu saat endpoint /api/profile sudah mengirim
-        // data user, tampilan ini otomatis akan memakainya.
         if (res?.data) setProfile(res.data);
       })
       .catch(() => {
@@ -42,38 +39,53 @@ function Profile() {
 
   return (
     <AppShell header={<Header value="" onChange={() => {}} placeholder="Cari..." />}>
-      <div className="rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 p-5 md:p-8 flex items-center gap-4 mb-6">
-        <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-full bg-gradient-to-br from-brand to-violet-600 text-white font-bold flex items-center justify-center text-lg">
-          {initials}
+      <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen text-stone-900 space-y-6">
+        
+        {/* Banner Header Profil */}
+        <div className="rounded-2xl bg-amber-50/80 p-5 md:p-8 flex items-center gap-4 border border-black shadow-xs">
+          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-full bg-amber-100 border-2 border-black text-stone-950 font-headline font-bold flex items-center justify-center text-xl shadow-xs">
+            {initials}
+          </div>
+          <div>
+            <span className="text-[10px] uppercase tracking-widest font-label font-bold text-amber-800">Akun Anggota</span>
+            <h2 className="font-headline font-bold text-stone-950 text-lg md:text-xl">{displayName}</h2>
+            <p className="text-xs md:text-sm font-body text-stone-600">{displayEmail}</p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-semibold text-slate-800 text-base md:text-lg">{displayName}</h2>
-          <p className="text-sm text-slate-500">{displayEmail}</p>
-        </div>
-      </div>
 
-      <ul className="bg-white rounded-2xl shadow-sm shadow-slate-900/5 overflow-hidden max-w-xl">
-        {menuItems.map((item) => (
-          <li
+        {/* Menu Options List */}
+        <ul className="bg-amber-50/40 rounded-2xl border border-black shadow-xs overflow-hidden max-w-xl font-label">
+          {menuItems.map((item) => (
+            <li
             key={item.label}
-            className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-medium text-slate-800 border-b border-slate-100 cursor-pointer hover:bg-slate-50"
+            onClick={() => navigate(item.path)}
+            className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-stone-900 border-b border-black cursor-pointer hover:bg-amber-100/50 transition-colors"
           >
             <span>{item.label}</span>
-            <span className="flex items-center gap-2 text-slate-300">
-              {item.hint && <span className="text-xs font-semibold text-brand">{item.hint}</span>}
+
+            <span className="flex items-center gap-2 text-stone-400">
+              {item.hint && (
+                <span className="text-xs font-bold text-stone-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-black shadow-xs">
+                  {item.hint}
+                </span>
+              )}
               <ChevronIcon />
             </span>
           </li>
-        ))}
-        <li
-          onClick={handleLogout}
-          className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-medium text-red-500 cursor-pointer hover:bg-red-50"
-        >
-          <span className="flex items-center gap-2">
-            <LogoutIcon /> Keluar
-          </span>
-        </li>
-      </ul>
+          ))}
+          
+          {/* Logout Option */}
+          <li
+            onClick={handleLogout}
+            className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-rose-700 cursor-pointer hover:bg-rose-50 transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <LogoutIcon /> Keluar Akun
+            </span>
+          </li>
+        </ul>
+
+      </div>
     </AppShell>
   );
 }
