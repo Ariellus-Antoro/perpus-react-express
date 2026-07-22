@@ -39,47 +39,51 @@ function Profile() {
 
   return (
     <AppShell header={<Header value="" onChange={() => {}} placeholder="Cari..." />}>
-      {/* Banner Header Profil (Hijau Tua Mewah + Emas) */}
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 p-5 md:p-8 flex items-center gap-4 mb-6 border border-amber-500/30 shadow-md">
-        <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-full bg-emerald-900 border-2 border-amber-500/50 text-amber-400 font-bold flex items-center justify-center text-xl shadow-inner">
-          {initials}
+      <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen text-stone-900 space-y-6">
+        
+        {/* Banner Header Profil */}
+        <div className="rounded-2xl bg-amber-50/80 p-5 md:p-8 flex items-center gap-4 border border-black shadow-xs">
+          <div className="w-14 h-14 md:w-16 md:h-16 shrink-0 rounded-full bg-amber-100 border-2 border-black text-stone-950 font-headline font-bold flex items-center justify-center text-xl shadow-xs">
+            {initials}
+          </div>
+          <div>
+            <span className="text-[10px] uppercase tracking-widest font-label font-bold text-amber-800">Akun Anggota</span>
+            <h2 className="font-headline font-bold text-stone-950 text-lg md:text-xl">{displayName}</h2>
+            <p className="text-xs md:text-sm font-body text-stone-600">{displayEmail}</p>
+          </div>
         </div>
-        <div>
-          <span className="text-[10px] uppercase tracking-widest font-semibold text-amber-400">Akun Anggota</span>
-          <h2 className="font-bold text-amber-100 text-lg md:text-xl">{displayName}</h2>
-          <p className="text-xs md:text-sm text-emerald-200/80">{displayEmail}</p>
-        </div>
-      </div>
 
-      {/* Menu Options List */}
-      <ul className="bg-white rounded-2xl border border-emerald-900/15 shadow-sm overflow-hidden max-w-xl">
-        {menuItems.map((item) => (
+        {/* Menu Options List */}
+        <ul className="bg-amber-50/40 rounded-2xl border border-black shadow-xs overflow-hidden max-w-xl font-label">
+          {menuItems.map((item) => (
+            <li
+              key={item.label}
+              className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-stone-900 border-b border-black cursor-pointer hover:bg-amber-100/50 transition-colors"
+            >
+              <span>{item.label}</span>
+              <span className="flex items-center gap-2 text-stone-400">
+                {item.hint && (
+                  <span className="text-xs font-bold text-stone-950 bg-amber-200 px-2.5 py-0.5 rounded-full border border-black shadow-xs">
+                    {item.hint}
+                  </span>
+                )}
+                <ChevronIcon />
+              </span>
+            </li>
+          ))}
+          
+          {/* Logout Option */}
           <li
-            key={item.label}
-            className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-emerald-950 border-b border-emerald-900/10 cursor-pointer hover:bg-emerald-50/60 transition-colors"
+            onClick={handleLogout}
+            className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-rose-700 cursor-pointer hover:bg-rose-50 transition-colors"
           >
-            <span>{item.label}</span>
-            <span className="flex items-center gap-2 text-emerald-800/40">
-              {item.hint && (
-                <span className="text-xs font-bold text-amber-950 bg-amber-400 px-2.5 py-0.5 rounded-full border border-amber-500/30 shadow-sm">
-                  {item.hint}
-                </span>
-              )}
-              <ChevronIcon />
+            <span className="flex items-center gap-2">
+              <LogoutIcon /> Keluar Akun
             </span>
           </li>
-        ))}
-        
-        {/* Logout Option */}
-        <li
-          onClick={handleLogout}
-          className="flex items-center justify-between px-4 md:px-6 py-4 text-sm font-semibold text-rose-600 cursor-pointer hover:bg-rose-50/70 transition-colors"
-        >
-          <span className="flex items-center gap-2">
-            <LogoutIcon /> Keluar Akun
-          </span>
-        </li>
-      </ul>
+        </ul>
+
+      </div>
     </AppShell>
   );
 }

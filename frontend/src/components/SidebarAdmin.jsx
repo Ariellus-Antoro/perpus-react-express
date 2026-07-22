@@ -19,18 +19,18 @@ export default function SidebarAdmin() {
   }
 
   return (
-    <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-emerald-950 text-white border-r border-amber-500/20 h-screen sticky top-0 shadow-lg">
-      <div className="flex items-center gap-3 px-6 h-16 border-b border-amber-500/20">
-        <div className="w-9 h-9 rounded-xl bg-emerald-900 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-base shadow-sm">
+    <aside style={{ backgroundColor: '#FDFBF7' }} className="hidden md:flex md:flex-col w-64 shrink-0 text-stone-900 h-screen sticky top-0 shadow-xs">
+      <div className="flex items-center gap-3 px-6 h-16 border-b border-amber-200/60">
+        <div className="w-9 h-9 rounded-xl bg-amber-100 border border-black flex items-center justify-center text-stone-900 font-headline font-bold text-base shadow-xs">
           P
         </div>
         <div>
-          <span className="font-bold text-amber-100 text-sm block leading-none">Perpustakaan</span>
-          <span className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold">Digital Admin</span>
+          <span className="font-headline font-bold text-stone-950 text-sm block leading-none">Perpustakaan</span>
+          <span className="font-label text-[10px] uppercase tracking-wider text-amber-800 font-semibold">Digital Admin</span>
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-6 space-y-1.5">
+      <nav className="flex-1 px-3 py-6 space-y-1.5 font-label">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -39,8 +39,8 @@ export default function SidebarAdmin() {
             className={({ isActive }) =>
               'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ' +
               (isActive
-                ? 'bg-amber-400 text-emerald-950 shadow-sm border border-amber-500'
-                : 'text-emerald-100/70 hover:bg-emerald-900/60 hover:text-amber-300')
+                ? 'bg-amber-100 text-stone-950 shadow-xs border border-black'
+                : 'text-stone-700 hover:bg-amber-50 hover:text-stone-950 border border-transparent')
             }
           >
             <Icon />
@@ -51,7 +51,7 @@ export default function SidebarAdmin() {
 
       <button
         onClick={handleLogout}
-        className="mx-3 mb-6 flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+        className="font-label mx-3 mb-6 flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-rose-700 hover:bg-rose-50 border border-transparent hover:border-rose-300 transition-all"
       >
         <LogoutIcon />
         Keluar
