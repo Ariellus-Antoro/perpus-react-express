@@ -1,33 +1,24 @@
-<<<<<<< Updated upstream
+
 const userRepo = require('../repository/userRepository');
 
 const getAllMembers = async()=>{
     const members = await userRepo.getAllMembers();
     if (!members || members.length === 0) {
         return { message: "Belum ada data anggota yang terdaftar.", data: [] };
-=======
-// Arahkan ke repository yang benar
-const userRepo = require('../repository/userRepository');
 
+    }
+}
 async function getUserProfile(userId){
     const ambilUser = await userRepo.getUserById(userId);
 
     if(!ambilUser){
         throw new Error('Data pengguna tidak ada');
->>>>>>> Stashed changes
+
     }
 
     return members;
 };
 
-const getUserProfile = async(userId)=>{
-    const user = await userRepo.getUserById(userId);
-    if(!user){
-        throw new Error('Data Pengguna tidak ditemukan');
-    }
-
-    return user;
-};
 
 const editMember = async(userId, updateData)=>{
     const user = await userRepo.getUserById(userId);

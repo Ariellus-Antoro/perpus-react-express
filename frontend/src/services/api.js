@@ -25,14 +25,14 @@ async function request(path, options = {}) {
 // --- Auth: sesuai route backend yang ada (POST /api/login, POST /api/register) ---
 
 export function loginUser({ email, password }) {
-  return request('/login', {
+  return request('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 }
 
 export function registerUser(payload) {
-  return request('/register', {
+  return request('/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
