@@ -1,21 +1,3 @@
-<<<<<<< HEAD
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
-
-async function main() {
-  
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-}
-=======
 // prisma/seed.js
 const bcrypt = require('bcryptjs');
 const prisma = require('../src/config/db.js');
@@ -51,4 +33,3 @@ main()
     .finally(async () => {
         await prisma.$disconnect();
     });
->>>>>>> main
