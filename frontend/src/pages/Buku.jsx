@@ -8,17 +8,17 @@ import { books, categories } from '../data/books';
 const tabs = ['Semua', 'Fiksi', 'Non-Fiksi', 'Sains', 'Sejarah'];
 
 const fiksi = [
-  { title: 'Laskar Pelangi', author: 'Andrea Hirata', gradient: 'linear-gradient(160deg,#064e3b,#022c22)' },
-  { title: 'Cantik Itu Luka', author: 'Eka Kurniawan', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
-  { title: 'Negeri 5 Menara', author: 'A. Fuadi', gradient: 'linear-gradient(160deg,#fbbf24,#b45309)' },
-  { title: 'Laut Bercerita', author: 'Leila S. Chudori', gradient: 'linear-gradient(160deg,#047857,#065f46)' },
+  { title: 'Laskar Pelangi', author: 'Andrea Hirata', gradient: 'linear-gradient(160deg,#78350f,#451a03)' },
+  { title: 'Cantik Itu Luka', author: 'Eka Kurniawan', gradient: 'linear-gradient(160deg,#92400e,#581c87)' },
+  { title: 'Negeri 5 Menara', author: 'A. Fuadi', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
+  { title: 'Laut Bercerita', author: 'Leila S. Chudori', gradient: 'linear-gradient(160deg,#65a30d,#3f6212)' },
 ];
 
 const nonFiksi = [
-  { title: 'Sapiens', author: 'Yuval N. Harari', gradient: 'linear-gradient(160deg,#334155,#0f172a)' },
-  { title: 'Atomic Habits', author: 'James Clear', gradient: 'linear-gradient(160deg,#059669,#064e3b)' },
-  { title: 'Filosofi Teras', author: 'Henry Manampiring', gradient: 'linear-gradient(160deg,#d97706,#92400e)' },
-  { title: 'Bumi Manusia', author: 'Pramoedya A.T.', gradient: 'linear-gradient(160deg,#065f46,#022c22)' },
+  { title: 'Sapiens', author: 'Yuval N. Harari', gradient: 'linear-gradient(160deg,#475569,#1e293b)' },
+  { title: 'Atomic Habits', author: 'James Clear', gradient: 'linear-gradient(160deg,#d97706,#b45309)' },
+  { title: 'Filosofi Teras', author: 'Henry Manampiring', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
+  { title: 'Bumi Manusia', author: 'Pramoedya A.T.', gradient: 'linear-gradient(160deg,#854d0e,#422006)' },
 ];
 
 export default function Buku() {
@@ -39,58 +39,67 @@ export default function Buku() {
 
   return (
     <AppShell header={<Header value={query} onChange={setQuery} placeholder="Cari judul buku..." />}>
-      {/* Category Pills Header */}
-      <div className="flex gap-2 overflow-x-auto pb-1 mb-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {tabs.map((c) => (
-          <button
-            key={c}
-            onClick={() => setActive(c)}
-            className={
-              'shrink-0 px-4 py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-250 ' +
-              (active === c
-                ? 'bg-emerald-950 text-amber-400 border border-amber-500/40 shadow-sm'
-                : 'bg-emerald-50 text-emerald-900/70 hover:bg-emerald-100 hover:text-emerald-950')
-            }
-          >
-            {c}
-          </button>
-        ))}
-      </div>
+      {/* Background utama putih polos */}
+      <div className="bg-white min-h-screen p-2 md:p-4 space-y-6 text-stone-900">
+        
+        {/* Category Pills Header */}
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {tabs.map((c) => (
+            <button
+              key={c}
+              onClick={() => setActive(c)}
+              className={
+                'shrink-0 px-4 py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-250 ' +
+                (active === c
+                  ? 'bg-amber-100 text-stone-950 border border-black shadow-xs'
+                  : 'bg-amber-50/50 text-stone-700 hover:bg-amber-100/60 hover:text-stone-950 border border-black/30')
+              }
+            >
+              {c}
+            </button>
+          ))}
+        </div>
 
-      {/* Section 1: Fiksi */}
-      <div className="flex items-baseline justify-between mb-3 border-b border-emerald-900/10 pb-2">
-        <h3 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-          Fiksi
-        </h3>
-        <span className="text-xs md:text-sm font-semibold text-amber-600 hover:text-amber-700 cursor-pointer transition">
-          Lihat semua &rarr;
-        </span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
-        {fiksi.map((b, index) => (
-          <Link key={b.title} to={`/buku/${index + 1}`} className="group">
-            <BookCard {...b} />
-          </Link>
-        ))}
-      </div>
+        {/* Section 1: Fiksi */}
+        <div className="flex items-baseline justify-between mb-3 border-b border-black pb-2">
+          <h3 className="font-bold text-stone-900 text-lg flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-stone-900 inline-block"></span>
+            Fiksi
+          </h3>
+          <span className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
+            Lihat semua &rarr;
+          </span>
+        </div>
+        
+        {/* Container grid dengan border hitam */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
+          {fiksi.map((b, index) => (
+            <Link key={b.title} to={`/buku/${index + 1}`} className="group">
+              <BookCard {...b} />
+            </Link>
+          ))}
+        </div>
 
-      {/* Section 2: Non-Fiksi */}
-      <div className="flex items-baseline justify-between mb-3 border-b border-emerald-900/10 pb-2">
-        <h3 className="font-bold text-emerald-950 text-lg flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-          Non-Fiksi
-        </h3>
-        <span className="text-xs md:text-sm font-semibold text-amber-600 hover:text-amber-700 cursor-pointer transition">
-          Lihat semua &rarr;
-        </span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {nonFiksi.map((b, index) => (
-          <Link key={b.title} to={`/buku/${fiksi.length + index + 1}`} className="group">
-            <BookCard {...b} />
-          </Link>
-        ))}
+        {/* Section 2: Non-Fiksi */}
+        <div className="flex items-baseline justify-between mb-3 border-b border-black pb-2">
+          <h3 className="font-bold text-stone-900 text-lg flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-stone-900 inline-block"></span>
+            Non-Fiksi
+          </h3>
+          <span className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
+            Lihat semua &rarr;
+          </span>
+        </div>
+
+        {/* Container grid dengan border hitam */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
+          {nonFiksi.map((b, index) => (
+            <Link key={b.title} to={`/buku/${fiksi.length + index + 1}`} className="group">
+              <BookCard {...b} />
+            </Link>
+          ))}
+        </div>
+
       </div>
     </AppShell>
   );

@@ -48,49 +48,49 @@ function Register() {
   }
 
   return (
-    <div className="min-h-screen flex bg-emerald-50/40">
-      {/* Left Banner Section (Hijau Tua Mewah + Emas) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 text-white flex-col justify-center px-16 border-r border-amber-500/30 relative overflow-hidden">
-        {/* Element Aksen Lingkaran Emas Tipis */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+    <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen flex text-stone-900">
+      {/* Left Banner Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-amber-50/80 text-stone-900 flex-col justify-center px-16 border-r border-black relative overflow-hidden">
+        {/* Element Aksen Dekoratif */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-200/50 blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-amber-300/30 blur-3xl pointer-events-none"></div>
 
-        <div className="w-14 h-14 rounded-2xl bg-emerald-900 border border-amber-500/40 flex items-center justify-center font-bold text-2xl text-amber-400 mb-6 shadow-md">
+        <div className="w-14 h-14 rounded-2xl bg-amber-100 border border-black flex items-center justify-center font-headline font-bold text-2xl text-stone-950 mb-6 shadow-xs">
           P
         </div>
-        <span className="text-xs uppercase tracking-widest font-semibold text-amber-400 mb-1">
+        <span className="text-xs uppercase tracking-widest font-label font-bold text-amber-800 mb-1">
           Pendaftaran Anggota
         </span>
-        <h1 className="text-3xl font-bold mb-3 text-amber-100">Buat Akun Baru</h1>
-        <p className="text-emerald-100/80 max-w-sm leading-relaxed">
+        <h1 className="text-3xl font-headline font-bold mb-3 text-stone-950">Buat Akun Baru</h1>
+        <p className="font-body text-stone-700 max-w-sm leading-relaxed">
           Daftar sebagai anggota untuk mulai meminjam buku. Akun akan diverifikasi oleh admin
           sebelum dapat melakukan transaksi peminjaman.
         </p>
       </div>
 
       {/* Right Form Section */}
-      <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-emerald-900/10 shadow-sm">
+      <div className="flex-1 flex items-center justify-center px-6 py-10" style={{ backgroundColor: '#FDFBF7' }}>
+        <div className="w-full max-w-md bg-amber-50/40 p-8 rounded-3xl border border-black shadow-xs">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-emerald-950 mb-1">Buat Akun</h2>
-            <p className="text-sm text-emerald-800/70">Daftar sebagai anggota Perpustakaan Digital</p>
+            <h2 className="text-2xl font-headline font-bold text-stone-950 mb-1">Buat Akun</h2>
+            <p className="text-sm font-body text-stone-600">Daftar sebagai anggota Perpustakaan Digital</p>
           </div>
 
           {error && (
-            <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium px-4 py-3">
+            <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-400 text-rose-700 text-sm font-medium px-4 py-3 shadow-xs">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm font-medium px-4 py-3">
+            <div className="mb-5 rounded-2xl bg-amber-100 border border-black text-stone-950 text-sm font-medium px-4 py-3 shadow-xs">
               {success}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 font-body">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Nama Lengkap</span>
+                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Nama Lengkap</span>
                 <input
                   type="text"
                   name="full_name"
@@ -98,12 +98,12 @@ function Register() {
                   value={form.full_name}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">NIK</span>
+                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">NIK</span>
                 <input
                   type="text"
                   name="nik"
@@ -112,13 +112,13 @@ function Register() {
                   onChange={handleChange}
                   maxLength={20}
                   required
-                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
             </div>
 
             <label className="block">
-              <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Email</span>
+              <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Email</span>
               <input
                 type="email"
                 name="email"
@@ -126,13 +126,13 @@ function Register() {
                 value={form.email}
                 onChange={handleChange}
                 required
-                className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
               />
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">No. HP</span>
+                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">No. HP</span>
                 <input
                   type="tel"
                   name="phone"
@@ -140,38 +140,38 @@ function Register() {
                   value={form.phone}
                   onChange={handleChange}
                   maxLength={15}
-                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Nomor KTP</span>
+                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Nomor KTP</span>
                 <input
                   type="text"
                   name="ktp"
                   placeholder="Nomor KTP (opsional)"
                   value={form.ktp}
                   onChange={handleChange}
-                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
             </div>
 
             <label className="block">
-              <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Alamat</span>
+              <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Alamat</span>
               <input
                 type="text"
                 name="address"
                 placeholder="Alamat lengkap"
                 value={form.address}
                 onChange={handleChange}
-                className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
               />
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Password</span>
+                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Password</span>
                 <input
                   type="password"
                   name="password"
@@ -180,12 +180,12 @@ function Register() {
                   onChange={handleChange}
                   minLength={6}
                   required
-                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Konfirmasi Password</span>
+                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Konfirmasi Password</span>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -194,7 +194,7 @@ function Register() {
                   onChange={handleChange}
                   minLength={6}
                   required
-                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
+                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
             </div>
@@ -202,15 +202,15 @@ function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-2xl bg-emerald-950 hover:bg-emerald-900 border border-amber-500/40 text-amber-400 font-bold py-3 text-sm mt-2 shadow-md transition-all disabled:opacity-60"
+              className="w-full rounded-2xl bg-amber-100 hover:bg-amber-200 border border-black text-stone-950 font-label font-bold py-3 text-sm mt-2 shadow-xs transition-all disabled:opacity-60"
             >
               {loading ? 'Memproses...' : 'Daftar Sekarang'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-emerald-800/70 mt-6">
+          <p className="text-center text-sm font-body text-stone-600 mt-6">
             Sudah punya akun?{' '}
-            <Link to="/login" className="text-amber-600 hover:text-amber-700 font-semibold transition">
+            <Link to="/login" className="font-label text-stone-950 hover:underline font-bold transition">
               Masuk di sini
             </Link>
           </p>
