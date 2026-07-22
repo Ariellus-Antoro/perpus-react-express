@@ -6,7 +6,7 @@ const getUserByEmail = async(email) =>{
         where: {email: email}
     });
 };
-
+// Bagian Arvid
 // const getUserByEmail = async (email) => {
 //     const query = 'SELECT * FROM users WHERE email = ?';
 //     const [response] = await db.execute(query,[email]);
@@ -53,9 +53,10 @@ const saveSession = async(userId, token, expiresAt)=>{
 
 // Prisma ORM
 const getUserById = async (id)=>{
-    return prisma.users.findUnique({
+    return prisma.users.findFirst({
         where:{
-            id: parseInt(id)
+            id: parseInt(id),
+            deleted_at:null
         },
         select:{
             id:true,
@@ -78,11 +79,97 @@ const getUserById = async (id)=>{
 //     return response[0];
 // }
 
+const deleteSession = async (token)=>{
+    return await prisma.tokenSessions.deleteMany({
+        where:{
+            token: token
+        }
+    });
+};
+
+const getAllMembers = async()=>{
+    return await prisma.users.findMany({
+        where:{
+            role: 'MEMBER',
+            deleted_at: null
+        },
+
+        select:{
+            id:true,
+            nik:true,
+            email:true,
+            full_name:true,
+            phone:true,
+            account_status:true,
+            created_at:true,
+        },
+        orderBy:{
+            created_at: 'desc'
+        }
+    });
+};
+
+const updateMemberStatus = async(id,status)=>{
+    return await prisma.users.update({
+        where:{
+            id: Number(id)
+        },
+        data:{
+            account_status: status
+        },
+        select:{
+            id: true,
+            full_name: true,
+            account_status: true
+        }
+    });
+};
+
+const updateUser = async(id, updateData) =>{
+    return await prisma.users.update({
+        where:{
+            id: Number(id)
+        },
+
+        data:updateData,
+        select:{
+            id:true,
+            nik:true,
+            email:true,
+            full_name:true,
+            address:true,
+            phone:true,
+            ktp:true,
+            updated_at:true
+        }
+    });
+};
+
+const deleteMember = async(id)=>{
+    return await prisma.users.update({
+        where:{
+            id: Number(id)
+        },
+        data:{
+            deleted_at:new Date()
+        },
+        select:{
+            id:true,
+            email:true,
+            deleted_at:true
+        }
+    });
+};
+
 module.exports = {
     getUserByEmail,
     createUser,
     saveSession,
-    getUserById
+    getUserById,
+    deleteSession,
+    getAllMembers,
+    updateMemberStatus,
+    updateUser,
+    deleteMember,
 };
 
-// Bagian Arvid
