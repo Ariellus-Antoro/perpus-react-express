@@ -12,6 +12,7 @@ CREATE TABLE `categories` (
 -- CreateTable
 CREATE TABLE `users` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `nik` VARCHAR(20) NULL,
     `email` VARCHAR(100) NOT NULL,
     `password` VARCHAR(100) NOT NULL,
     `full_name` VARCHAR(100) NOT NULL,
@@ -48,7 +49,7 @@ CREATE TABLE `books` (
 
 -- CreateTable
 CREATE TABLE `borrowings` (
-    `id` VARCHAR(50) NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `book_id` INTEGER NOT NULL,
     `borrow_date` DATE NOT NULL,
@@ -64,7 +65,7 @@ CREATE TABLE `borrowings` (
 -- CreateTable
 CREATE TABLE `fines` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `borrowing_id` VARCHAR(191) NOT NULL,
+    `borrowing_id` INTEGER NOT NULL,
     `total_fines` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `payment_status` ENUM('UNPAID', 'PAID') NOT NULL DEFAULT 'UNPAID',
     `payment_date` TIMESTAMP(0) NULL,

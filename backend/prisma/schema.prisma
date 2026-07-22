@@ -93,7 +93,7 @@ model Books {
 }
 
 model Borrowings {
-  id String @id @db.VarChar(50)
+  id Int @id @default(autoincrement())
   user_id Int
   book_id Int
   borrow_date DateTime @db.Date
@@ -112,7 +112,7 @@ model Borrowings {
 
 model Fines {
   id Int @id @default(autoincrement())
-  borrowing_id String @unique
+  borrowing_id Int @unique
   total_fines Decimal @db.Decimal(10, 2) @default(0.00)
   payment_status PaymentStatus @default(UNPAID)
   payment_date DateTime? @db.Timestamp(0)
