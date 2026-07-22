@@ -18,9 +18,12 @@ function Login() {
     setLoading(true);
     try {
       const res = await loginUser(form);
-      saveSession(res.data.token);
+      saveSession(res.token || res.data.token);
       
-      if (res.data?.user?.role === 'ADMIN') {
+      // PERBAIKAN: Baca role dari struktur JSON yang benar
+      const userRole = res.data?.role || res.data?.data?.role || res.user?.role;
+      
+      if (userRole === 'ADMIN') {
         navigate('/admin/dashboard');
       } else {
         navigate('/');

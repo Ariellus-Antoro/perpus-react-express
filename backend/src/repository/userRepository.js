@@ -1,20 +1,12 @@
-const prisma = require ('../config/db')
+const prisma = require('../config/db');
 
-// Prisma ORM
-const getUserByEmail = async(email) =>{
+const getUserByEmail = async (email) => {
     return prisma.users.findUnique({
-        where: {email: email}
+        where: { email: email }
     });
 };
-// Bagian Arvid
-// const getUserByEmail = async (email) => {
-//     const query = 'SELECT * FROM users WHERE email = ?';
-//     const [response] = await db.execute(query,[email]);
-//     return response[0];
-// }
 
-// Prisma ORM
-const createUser = async(userData) =>{
+const createUser = async (userData) => {
     return prisma.users.create({
         data: {
             nik: userData.nik,
@@ -28,38 +20,23 @@ const createUser = async(userData) =>{
     });
 };
 
-// const createUser = async (userData) => {
-//     const query = 'INSERT INTO users (nik, email, password, full_name, address, phone, ktp) values (?,?,?,?,?,?,?)';
-//     const [response] = await db.execute(query, [userData.nik, userData.email, userData.password, userData.full_name, userData.address, userData.phone, userData.ktp]);
-// }
-
-// Prisma ORM
-const saveSession = async(userId, token, expiresAt)=>{
+const saveSession = async (userId, token, expiresAt) => {
     return prisma.tokenSessions.create({
-        data:{
-            user_id:userId,
+        data: {
+            user_id: userId,
             token,
             expires_at: new Date(expiresAt)
         }
     });
 };
 
-// const saveSession = async (userId, token, expiresAt) => {
-//     const query = 'INSERT INTO token_sessions (user_Id, token, expires_At) values (?,?,?)';
-//     const [response] = await db.execute(query,[userId, token, expiresAt]);
-//     return response;
-// }
-
-
-// Prisma ORM
-const getUserById = async (id)=>{
+const getUserById = async (id) => {
     return prisma.users.findFirst({
-        where:{
+        where: {
             id: parseInt(id),
-            deleted_at:null
+            deleted_at: null
         },
-        select:{
-            id:true,
+        select: {
             id: true,
             nik: true,
             email: true,
@@ -73,51 +50,38 @@ const getUserById = async (id)=>{
     });
 };
 
-// const getUserById = async (id) => {
-//     const query = 'SELECT id, nik, email, full_name, address, phone, ktp, role, account_status FROM users WHERE id = ?';
-//     const [response] = await db.execute(query, [id]);
-//     return response[0];
-// }
-
-const deleteSession = async (token)=>{
+const deleteSession = async (token) => {
     return await prisma.tokenSessions.deleteMany({
-        where:{
-            token: token
-        }
+        where: { token: token }
     });
 };
 
-const getAllMembers = async()=>{
+// --- Fungsi Khususu Member ---
+
+const getAllMembers = async () => {
     return await prisma.users.findMany({
-        where:{
+        where: {
             role: 'MEMBER',
             deleted_at: null
         },
-
-        select:{
-            id:true,
-            nik:true,
-            email:true,
-            full_name:true,
-            phone:true,
-            account_status:true,
-            created_at:true,
+        select: {
+            id: true,
+            nik: true,
+            email: true,
+            full_name: true,
+            phone: true,
+            account_status: true,
+            created_at: true,
         },
-        orderBy:{
-            created_at: 'desc'
-        }
+        orderBy: { created_at: 'desc' }
     });
 };
 
-const updateMemberStatus = async(id,status)=>{
+const updateMemberStatus = async (id, status) => {
     return await prisma.users.update({
-        where:{
-            id: Number(id)
-        },
-        data:{
-            account_status: status
-        },
-        select:{
+        where: { id: Number(id) },
+        data: { account_status: status },
+        select: {
             id: true,
             full_name: true,
             account_status: true
@@ -125,39 +89,49 @@ const updateMemberStatus = async(id,status)=>{
     });
 };
 
-const updateUser = async(id, updateData) =>{
+const deleteMember = async (id) => {
     return await prisma.users.update({
-        where:{
-            id: Number(id)
-        },
-
-        data:updateData,
-        select:{
-            id:true,
-            nik:true,
-            email:true,
-            full_name:true,
-            address:true,
-            phone:true,
-            ktp:true,
-            updated_at:true
+        where: { id: Number(id) },
+        data: { deleted_at: new Date() },
+        select: {
+            id: true,
+            email: true,
+            deleted_at: true
         }
     });
 };
 
-const deleteMember = async(id)=>{
-    return await prisma.users.update({
-        where:{
-            id: Number(id)
+// --- Fungsi Khusus Admin (All Users) ---
+
+const getAllUsers = async () => {
+    return prisma.users.findMany({
+        where: { deleted_at: null },
+        select: {
+            id: true,
+            nik: true,
+            email: true,
+            full_name: true,
+            address: true,
+            phone: true,
+            role: true,
+            account_status: true,
+            created_at: true
         },
-        data:{
-            deleted_at:new Date()
-        },
-        select:{
-            id:true,
-            email:true,
-            deleted_at:true
-        }
+        orderBy: { created_at: 'desc' }
+    });
+};
+
+const updateUser = async (id, data) => {
+    return prisma.users.update({
+        where: { id: parseInt(id) },
+        data: data
+    });
+};
+
+const deleteUser = async (id) => {
+    return prisma.users.update({
+        where: { id: parseInt(id) },
+        data: { deleted_at: new Date() }
     });
 };
 
@@ -169,7 +143,8 @@ module.exports = {
     deleteSession,
     getAllMembers,
     updateMemberStatus,
-    updateUser,
     deleteMember,
+    getAllUsers,
+    updateUser,
+    deleteUser
 };
-

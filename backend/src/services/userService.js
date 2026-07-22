@@ -1,29 +1,26 @@
-
 const userRepo = require('../repository/userRepository');
 
-const getAllMembers = async()=>{
+const getAllMembers = async () => {
     const members = await userRepo.getAllMembers();
     if (!members || members.length === 0) {
         return { message: "Belum ada data anggota yang terdaftar.", data: [] };
-
     }
-}
-async function getUserProfile(userId){
-    const ambilUser = await userRepo.getUserById(userId);
-
-    if(!ambilUser){
-        throw new Error('Data pengguna tidak ada');
-
-    }
-
-    return members;
+    // PERBAIKAN: Wajib me-return data members jika ada
+    return { message: "Data anggota berhasil diambil", data: members };
 };
 
+async function getUserProfile(userId) {
+    const ambilUser = await userRepo.getUserById(userId);
+    if (!ambilUser) {
+        throw new Error('Data pengguna tidak ada');
+    }
+    // PERBAIKAN: Harus me-return ambilUser (sebelumnya salah ketik menjadi return members)
+    return ambilUser;
+}
 
-const editMember = async(userId, updateData)=>{
+const editMember = async (userId, updateData) => {
     const user = await userRepo.getUserById(userId);
-
-    if(!user){
+    if (!user) {
         throw new Error('Data Pengguna tidak ditemukan');
     }
 
@@ -53,10 +50,9 @@ const editMember = async(userId, updateData)=>{
     };
 };
 
-
-const approveMemberRegistration = async(userId)=>{
+const approveMemberRegistration = async (userId) => {
     const user = await userRepo.getUserById(userId);
-    if(!user){
+    if (!user) {
         throw new Error('Data Pengguna tidak ditemukan');
     }
 
@@ -69,29 +65,41 @@ const approveMemberRegistration = async(userId)=>{
     }
 
     const approvedUser = await userRepo.updateMemberStatus(userId, 'APPROVED');
-
     return approvedUser;
 };
 
-const removeMember = async (userId)=>{
+const removeMember = async (userId) => {
     const user = await userRepo.getUserById(userId);
-
-    if(!user){
+    if (!user) {
         throw new Error('Data pengguna tidak ditemukan atau sudah dihapus sebelumnya');
     }
 
     await userRepo.deleteMember(userId);
-
-    return{
-        message:'Member berhasil dihapus'
-    };
+    return { message: 'Member berhasil dihapus' };
 };
 
+// --- Fungsi Tambahan untuk Admin ---
 
+async function getAllUsers() {
+    return await userRepo.getAllUsers();
+}
+
+async function updateUser(id, data) {
+    return await userRepo.updateUser(id, data);
+}
+
+async function deleteUser(id) {
+    return await userRepo.deleteUser(id);
+}
+
+// PERBAIKAN: Masukkan seluruh fungsi ke dalam blok ekspor
 module.exports = {
     getAllMembers,
     getUserProfile,
     editMember,
     approveMemberRegistration,
-    removeMember
+    removeMember,
+    getAllUsers,
+    updateUser,
+    deleteUser
 };
