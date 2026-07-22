@@ -3,7 +3,7 @@ import BottomNav from './BottomNav';
 
 function AppShell({ header, children }) {
   return (
-    <div className="min-h-screen md:flex bg-slate-100">
+    <div className="min-h-screen md:flex bg-emerald-50/30">
       <Sidebar />
 
       <div className="flex-1 flex flex-col min-h-screen">

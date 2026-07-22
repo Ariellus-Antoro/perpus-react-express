@@ -45,6 +45,18 @@ export function fetchProfile(token) {
   });
 }
 
+export function fetchBooks() {
+  return request('/books', {
+    method: 'GET',
+  });
+}
+
+export function fetchBookById(id) {
+  return request(`/books/${id}`, {
+    method: 'GET',
+  });
+}
+
 // --- Sesi login (disimpan di localStorage) ---
 
 function decodeToken(token) {

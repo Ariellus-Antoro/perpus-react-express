@@ -41,39 +41,48 @@ function Register() {
       setSuccess(res.message || 'Registrasi berhasil, menunggu verifikasi admin.');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Gagal mendaftar. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-100">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand to-violet-700 text-white flex-col justify-center px-16">
-        <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center font-bold text-xl mb-6">
+    <div className="min-h-screen flex bg-emerald-50/40">
+      {/* Left Banner Section (Hijau Tua Mewah + Emas) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950 text-white flex-col justify-center px-16 border-r border-amber-500/30 relative overflow-hidden">
+        {/* Element Aksen Lingkaran Emas Tipis */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none"></div>
+
+        <div className="w-14 h-14 rounded-2xl bg-emerald-900 border border-amber-500/40 flex items-center justify-center font-bold text-2xl text-amber-400 mb-6 shadow-md">
           P
         </div>
-        <h1 className="text-3xl font-bold mb-3">Buat Akun Baru</h1>
-        <p className="text-white/80 max-w-sm">
+        <span className="text-xs uppercase tracking-widest font-semibold text-amber-400 mb-1">
+          Pendaftaran Anggota
+        </span>
+        <h1 className="text-3xl font-bold mb-3 text-amber-100">Buat Akun Baru</h1>
+        <p className="text-emerald-100/80 max-w-sm leading-relaxed">
           Daftar sebagai anggota untuk mulai meminjam buku. Akun akan diverifikasi oleh admin
-          sebelum dapat meminjam.
+          sebelum dapat melakukan transaksi peminjaman.
         </p>
       </div>
 
+      {/* Right Form Section */}
       <div className="flex-1 flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-emerald-900/10 shadow-sm">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-800 mb-1">Buat Akun</h2>
-            <p className="text-sm text-slate-500">Daftar sebagai anggota Perpustakaan Digital</p>
+            <h2 className="text-2xl font-bold text-emerald-950 mb-1">Buat Akun</h2>
+            <p className="text-sm text-emerald-800/70">Daftar sebagai anggota Perpustakaan Digital</p>
           </div>
 
           {error && (
-            <div className="mb-5 rounded-xl bg-red-50 text-red-600 text-sm font-medium px-4 py-3">
+            <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium px-4 py-3">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-5 rounded-xl bg-green-50 text-green-600 text-sm font-medium px-4 py-3">
+            <div className="mb-5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm font-medium px-4 py-3">
               {success}
             </div>
           )}
@@ -81,7 +90,7 @@ function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-semibold text-slate-600 mb-1.5">Nama Lengkap</span>
+                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Nama Lengkap</span>
                 <input
                   type="text"
                   name="full_name"
@@ -89,12 +98,12 @@ function Register() {
                   value={form.full_name}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm font-semibold text-slate-600 mb-1.5">NIK</span>
+                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">NIK</span>
                 <input
                   type="text"
                   name="nik"
@@ -103,13 +112,13 @@ function Register() {
                   onChange={handleChange}
                   maxLength={20}
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </label>
             </div>
 
             <label className="block">
-              <span className="block text-sm font-semibold text-slate-600 mb-1.5">Email</span>
+              <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Email</span>
               <input
                 type="email"
                 name="email"
@@ -117,13 +126,13 @@ function Register() {
                 value={form.email}
                 onChange={handleChange}
                 required
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
               />
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-semibold text-slate-600 mb-1.5">No. HP</span>
+                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">No. HP</span>
                 <input
                   type="tel"
                   name="phone"
@@ -131,38 +140,38 @@ function Register() {
                   value={form.phone}
                   onChange={handleChange}
                   maxLength={15}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm font-semibold text-slate-600 mb-1.5">Nomor KTP</span>
+                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Nomor KTP</span>
                 <input
                   type="text"
                   name="ktp"
                   placeholder="Nomor KTP (opsional)"
                   value={form.ktp}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </label>
             </div>
 
             <label className="block">
-              <span className="block text-sm font-semibold text-slate-600 mb-1.5">Alamat</span>
+              <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Alamat</span>
               <input
                 type="text"
                 name="address"
                 placeholder="Alamat lengkap"
                 value={form.address}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
               />
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
-                <span className="block text-sm font-semibold text-slate-600 mb-1.5">Password</span>
+                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Password</span>
                 <input
                   type="password"
                   name="password"
@@ -171,12 +180,12 @@ function Register() {
                   onChange={handleChange}
                   minLength={6}
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </label>
 
               <label className="block">
-                <span className="block text-sm font-semibold text-slate-600 mb-1.5">Konfirmasi Password</span>
+                <span className="block text-sm font-semibold text-emerald-950 mb-1.5">Konfirmasi Password</span>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -185,7 +194,7 @@ function Register() {
                   onChange={handleChange}
                   minLength={6}
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:bg-white transition-colors"
+                  className="w-full rounded-2xl border border-emerald-900/15 bg-emerald-50/40 px-4 py-2.5 text-sm text-emerald-950 outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </label>
             </div>
@@ -193,15 +202,15 @@ function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand text-white font-semibold py-3 text-sm mt-2 disabled:opacity-60"
+              className="w-full rounded-2xl bg-emerald-950 hover:bg-emerald-900 border border-amber-500/40 text-amber-400 font-bold py-3 text-sm mt-2 shadow-md transition-all disabled:opacity-60"
             >
-              {loading ? 'Memproses...' : 'Daftar'}
+              {loading ? 'Memproses...' : 'Daftar Sekarang'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p className="text-center text-sm text-emerald-800/70 mt-6">
             Sudah punya akun?{' '}
-            <Link to="/login" className="text-brand font-semibold">
+            <Link to="/login" className="text-amber-600 hover:text-amber-700 font-semibold transition">
               Masuk di sini
             </Link>
           </p>

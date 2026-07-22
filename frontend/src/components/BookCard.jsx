@@ -2,17 +2,19 @@ import { Link } from 'react-router-dom';
 
 function BookCard({ id, title, author, gradient }) {
   return (
-    <div className="flex flex-col min-w-0">
-      <Link
-        to={`/buku/${id}`}
-        className="block aspect-[3/4.2] rounded-xl overflow-hidden shadow-md shadow-slate-900/10 transition-transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
+    <div className="flex flex-col min-w-0 group cursor-pointer">
+      <div
+        className="aspect-[3/4.2] rounded-xl flex items-end p-2.5 shadow-md border border-amber-500/20 transition-transform duration-200 group-hover:-translate-y-1"
+        style={{ background: gradient }}
       >
-        <div className="w-full h-full flex items-end p-2" style={{ background: gradient }}>
-          <span className="text-white/90 text-[11px] font-bold leading-snug">{title}</span>
-        </div>
-      </Link>
-      <p className="mt-2 text-sm font-semibold text-slate-800 truncate">{title}</p>
-      <p className="text-xs text-slate-400 truncate">{author}</p>
+        <span className="text-amber-100 text-[11px] font-bold leading-snug drop-shadow-md">
+          {title}
+        </span>
+      </div>
+      <p className="mt-2 text-sm font-bold text-emerald-950 truncate group-hover:text-amber-600 transition-colors">
+        {title}
+      </p>
+      <p className="text-xs text-emerald-800/70 truncate">{author}</p>
     </div>
   );
 }
