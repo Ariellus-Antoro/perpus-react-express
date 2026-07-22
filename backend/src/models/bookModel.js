@@ -1,15 +1,47 @@
-const db = require('../config/db');
+const prisma = require('../config/db');
 
 const getBooks = async () => {
-  const query = `SELECT id, category_id, title, author, publisher, description, book_cover, year, total_stock, available FROM books WHERE deleted_at IS NULL`;
-  const [response] = await db.execute(query);
-  return response;
+  // Menggunakan Prisma ORM untuk mengambil buku yang belum dihapus
+  const books = await prisma.books.findMany({
+    where: {
+      deleted_at: null
+    },
+    select: {
+      id: true,
+      category_id: true,
+      title: true,
+      author: true,
+      publisher: true,
+      description: true,
+      book_cover: true,
+      year: true,
+      total_stock: true,
+      available: true
+    }
+  });
+  return books;
 };
 
 const getBookById = async (id) => {
-  const query = `SELECT id, category_id, title, author, publisher, description, book_cover, year, total_stock, available FROM books WHERE id = ? AND deleted_at IS NULL`;
-  const [response] = await db.execute(query, [id]);
-  return response[0];
+  const book = await prisma.books.findFirst({
+    where: {
+      id: parseInt(id),
+      deleted_at: null
+    },
+    select: {
+      id: true,
+      category_id: true,
+      title: true,
+      author: true,
+      publisher: true,
+      description: true,
+      book_cover: true,
+      year: true,
+      total_stock: true,
+      available: true
+    }
+  });
+  return book;
 };
 
 module.exports = {

@@ -1,8 +1,8 @@
 require('dotenv/config');
-const { PrismaClient } = require('../generated/prisma/client.ts');
+// Hapus /client.ts, cukup arahkan ke foldernya
+const { PrismaClient } = require('../../generated/prisma');
 const { PrismaMariaDb } = require('@prisma/adapter-mariadb');
 
-// Buat koneksi adapter menggunakan kredensial dari environment variable
 const adapter = new PrismaMariaDb({
     host: process.env.DB_HOST || "localhost",
     port: Number(process.env.DB_PORT) || 3306,
