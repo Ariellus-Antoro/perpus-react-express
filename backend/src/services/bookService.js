@@ -1,4 +1,4 @@
-const prisma = require("../config/prisma");
+const prisma = require("../config/db");
 
 async function getAllBooks() {
   return await prisma.books.findMany({

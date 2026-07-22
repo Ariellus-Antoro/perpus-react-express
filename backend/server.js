@@ -1,9 +1,9 @@
 require("dotenv").config();
 const express = require("express");
-const pool = require("./src/config/db");
+const path = require("path");
 
-//
-const prisma = require("./src/config/prisma");
+// const pool = require("./src/config/db");
+const prisma = require("./src/config/db");
 //
 
 const mainRoutes = require("./src/routes");
@@ -12,7 +12,8 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
-
+// Akses folder 'public'
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", mainRoutes);
 
 // Middleware error handling
@@ -32,31 +33,29 @@ app.use((err, req, res, next) => {
   });
 });
 
-async function testDatabaseConnection() {
-  try {
-    const connection = await pool.getConnection();
-    console.log("SUCCESS : Connected to Mysql");
-    connection.release();
-  } catch (error) {
-    console.error("ERROR : Failed to connect to Mysql");
-    console.error(error.message);
-  }
-}
+// async function testDatabaseConnection() {
+//   try {
+//     const connection = await pool.getConnection();
+//     console.log("SUCCESS : Connected to Mysql");
+//     connection.release();
+//   } catch (error) {
+//     console.error("ERROR : Failed to connect to Mysql");
+//     console.error(error.message);
+//   }
+// }
 
 async function testPrismaConnection() {
   try {
-    const categories = await prisma.categories.findMany();
-    console.log("✅ PRISMA SUCCESS : Connected to Mysql via Prisma!");
-    console.log("Data dari Prisma:", categories);
-  } catch (error) {
-    console.error("❌ PRISMA ERROR : Failed to connect via Prisma");
+    await prisma.$connect();
+    console.log("PRISMA SUCCESS : Berhasil terhubung ke database!");
+  }catch (error) {
+    console.error("PRISMA ERROR : Gagal terhubung ke database");
     console.error(error.message);
-  }
+    process.exit(1); // Matikan server jika database gagal terhubung
+    }
 }
-
-testDatabaseConnection();
-testPrismaConnection();
-
-app.listen(PORT, () => {
-  console.log(` Server running in port : ${PORT}`);
+testPrismaConnection().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port : ${PORT}`);
+  });
 });

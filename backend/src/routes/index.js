@@ -7,6 +7,10 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const categoryRoutes = require("./category_routes");
 const bookRoutes = require("./book_routes");
 
+//Import AuthRoutes
+const authRoute = require('./authRoutes');
+
+
 router.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -25,5 +29,7 @@ router.post("/register", authController.register);
 // router.post('/pinjam', authMiddleware.verifyToken, authMiddleware.isApproved, pinjamController.buatPeminjaman);
 
 router.get("/profile", authMiddleware.verifyToken, userController.getProfile);
+router.use('/auth', authRoute);
+
 
 module.exports = router;

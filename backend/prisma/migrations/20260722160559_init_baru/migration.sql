@@ -55,9 +55,10 @@ CREATE TABLE `borrowings` (
     `borrow_date` DATE NOT NULL,
     `due_date` DATE NOT NULL,
     `return_date` DATE NULL,
-    `status` ENUM('PENDING', 'BORROWED', 'RETURN_REQUESTED', 'RETURNED', 'REJECTED', 'LATE', 'LOST') NOT NULL DEFAULT 'PENDING',
+    `status` ENUM('PENDING', 'BORROWED', 'RETURNED', 'REQUEST_EXTEND', 'LATE', 'LOST') NOT NULL DEFAULT 'PENDING',
     `created_at` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` TIMESTAMP(0) NOT NULL,
+    `extend_count` INTEGER NOT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -69,6 +70,7 @@ CREATE TABLE `fines` (
     `total_fines` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     `payment_status` ENUM('UNPAID', 'PAID') NOT NULL DEFAULT 'UNPAID',
     `payment_date` TIMESTAMP(0) NULL,
+    `payment_method` ENUM('QRIS', 'BANK_TRANSFER', 'E_WALLET') NULL,
 
     UNIQUE INDEX `fines_borrowing_id_key`(`borrowing_id`),
     PRIMARY KEY (`id`)

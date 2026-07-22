@@ -1,10 +1,10 @@
-const prisma = require("../config/prisma");
+const prisma = require("../config/db");
 
 async function getAllCategories() {
   return await prisma.categories.findMany({
     where: {
       is_active: true,
-      deleted_at: null, 
+      deleted_at: null,
     },
     orderBy: {
       created_at: "desc",
