@@ -22,8 +22,10 @@ async function index(req, res) {
 async function show(req, res) {
   try {
     const { id } = req.params;
+    const user_id = req.user.id; 
+    const role = req.user.role; 
 
-    const borrowing = await borrowingService.getBorrowingById(id);
+    const borrowing = await borrowingService.getBorrowingById(id, user_id, role);
 
     if (!borrowing) {
       return res.status(404).json({
@@ -56,7 +58,6 @@ async function store(req, res) {
       });
     }
 
-    // 1. cek buku ada & stok tersedia
     const book = await borrowingService.getBookById(book_id);
     if (!book) {
       return res.status(404).json({
@@ -72,7 +73,6 @@ async function store(req, res) {
       });
     }
 
-    // 2. cek user belum punya peminjaman aktif untuk buku yang sama
     const existingBorrowing = await borrowingService.findActiveBorrowingForBook(
       user_id,
       book_id,
@@ -84,7 +84,6 @@ async function store(req, res) {
       });
     }
 
-    // 3. cek maksimal 5 buku aktif
     const activeCount = await borrowingService.countActiveBorrowings(user_id);
     if (activeCount >= borrowingService.MAX_ACTIVE_BORROWINGS) {
       return res.status(400).json({
@@ -93,7 +92,6 @@ async function store(req, res) {
       });
     }
 
-    // 4. buat peminjaman + kurangi stok (dalam transaction)
     const borrowing = await borrowingService.createBorrowing(user_id, book_id);
 
     res.status(201).json({
@@ -113,7 +111,6 @@ async function storeBulk(req, res) {
     const user_id = req.user.id;
     const { book_ids } = req.body;
 
-    // 1. validasi input dasar
     if (!Array.isArray(book_ids) || book_ids.length === 0) {
       return res.status(400).json({
         status: "error",
@@ -121,7 +118,6 @@ async function storeBulk(req, res) {
       });
     }
 
-    // 2. cek duplikat id dalam satu request
     const uniqueIds = new Set(book_ids.map((id) => Number(id)));
     if (uniqueIds.size !== book_ids.length) {
       return res.status(400).json({
@@ -130,23 +126,15 @@ async function storeBulk(req, res) {
       });
     }
 
-    // 3. cek total gabungan (yang sudah aktif + yang mau dipinjam) tidak melebihi batas maks
     const activeCount = await borrowingService.countActiveBorrowings(user_id);
-    if (
-      activeCount + book_ids.length >
-      borrowingService.MAX_ACTIVE_BORROWINGS
-    ) {
+    if (activeCount + book_ids.length > borrowingService.MAX_ACTIVE_BORROWINGS) {
       return res.status(400).json({
         status: "error",
         message: `Total peminjaman akan melebihi batas maksimal ${borrowingService.MAX_ACTIVE_BORROWINGS} buku aktif (saat ini aktif: ${activeCount})`,
       });
     }
 
-    // 4. proses semua buku dalam satu transaction (all-or-nothing)
-    const borrowings = await borrowingService.createBorrowingsBulk(
-      user_id,
-      book_ids,
-    );
+    const borrowings = await borrowingService.createBorrowingsBulk(user_id, book_ids);
 
     res.status(201).json({
       status: "success",
@@ -154,14 +142,12 @@ async function storeBulk(req, res) {
       data: borrowings,
     });
   } catch (error) {
-    // error dari dalam transaction (stok habis, buku gak ada, dll) balik ke sini
     res.status(400).json({
       status: "error",
       message: error.message,
     });
   }
 }
-
 
 async function returnConfirm(req, res) {
   try {
