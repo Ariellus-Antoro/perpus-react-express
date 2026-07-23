@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios'; // PERBAIKAN: Import axios langsung
+import axios from 'axios';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -83,10 +83,9 @@ export default function Register() {
     }
   };
 
-  // (Pastikan bagian return JSX komponen Register Anda tetap ada di bawah sini)
-}
   return (
-    <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen flex text-stone-900">
+    <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen flex text-stone-900 font-body">
+      {/* Left Banner Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-amber-50/80 text-stone-900 flex-col justify-center px-16 border-r border-black relative overflow-hidden">
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-200/50 blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-amber-300/30 blur-3xl pointer-events-none"></div>
@@ -112,14 +111,12 @@ export default function Register() {
             <p className="text-sm font-body text-stone-600">Daftar sebagai anggota Perpustakaan Digital</p>
           </div>
 
-          {/* Diperbaiki dari error ke errorMsg */}
           {errorMsg && (
             <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-400 text-rose-700 text-sm font-medium px-4 py-3 shadow-xs">
               {errorMsg}
             </div>
           )}
           
-          {/* Diperbaiki dari success ke successMsg */}
           {successMsg && (
             <div className="mb-5 rounded-2xl bg-amber-100 border border-black text-stone-950 text-sm font-medium px-4 py-3 shadow-xs">
               {successMsg}
@@ -182,7 +179,6 @@ export default function Register() {
                   className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
-
             </div>
 
             <div>
@@ -194,6 +190,7 @@ export default function Register() {
                 name="ktp"
                 accept="image/*"
                 onChange={handleFileChange}
+                required
                 className="w-full px-3.5 py-1.5 text-sm border border-black rounded-xl bg-white focus:outline-none text-stone-900 shadow-xs file:mr-4 file:py-1 file:px-3 file:rounded-xl file:border file:border-black file:text-xs file:font-label file:font-bold file:bg-amber-100 file:text-stone-950 hover:file:bg-amber-200 cursor-pointer"
               />
             </div>
