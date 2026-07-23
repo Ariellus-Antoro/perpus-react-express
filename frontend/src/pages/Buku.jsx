@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
@@ -15,8 +16,10 @@ export default function Buku() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // State untuk mengontrol tampilan (Detail vs Daftar)
-  const [selectedBook, setSelectedBook] = useState(null);
+  const location = useLocation();
+
+  // Jika ada data 'selectedBook' yang dikirim dari halaman Home, langsung jadikan state awal!
+  const [selectedBook, setSelectedBook] = useState(location.state?.selectedBook || null);
 
   useEffect(() => {
     const fetchBooksAndCategories = async () => {
