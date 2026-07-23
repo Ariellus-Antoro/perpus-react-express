@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const userController = require("../controllers/userController");
-const pinjamController = require("../controllers/pinjamController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const categoryRoutes = require("./category_routes");
 const bookRoutes = require("./book_routes");

@@ -54,6 +54,10 @@ const loginUser = async(email,password) =>{
         throw new Error('Email atau password salah');
     }
 
+    //Cek jwt di laptop Arvid (sempet masalah)
+    console.log("CEK ISI JWT SECRET:", process.env.JWT_SECRET);
+    
+
     // Buat token jwt
     const token = jwt.sign(
         { id: user.id, role: user.role },

@@ -9,7 +9,7 @@ const prisma = require("./src/config/db");
 const mainRoutes = require("./src/routes");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8000;
 
 app.use(express.json());
 // Akses folder 'public'
