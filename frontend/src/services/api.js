@@ -1,19 +1,23 @@
-// Base URL kosong ('') supaya request memakai path relatif '/api/...'
-// yang di-proxy oleh Vite ke backend (lihat vite.config.js) saat development.
-// Untuk production, set VITE_API_URL ke alamat backend, misal https://api-domain.com
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 async function request(path, options = {}) {
+  const headers = { ...options.headers };
+
+  //Setting FormData dan JSON
+  if (!(options.body instanceof FormData)) {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+
   const res = await fetch(`${API_BASE_URL}/api${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
+    headers, 
   });
 
   let data = {};
   try {
     data = await res.json();
   } catch {
-    // respons tanpa body (mis. error 404 polos)
   }
 
   if (!res.ok) {
@@ -25,21 +29,21 @@ async function request(path, options = {}) {
 // --- Auth: sesuai route backend yang ada (POST /api/login, POST /api/register) ---
 
 export function loginUser({ email, password }) {
-  return request('/login', {
+  return request('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 }
 
 export function registerUser(payload) {
-  return request('/register', {
+  return request('/auth/register', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 
 export function fetchProfile(token) {
-  return request('/profile', {
+  return request('/user/profile', {
     method: 'GET',
     headers: { Authorization: `Bearer ${token}` },
   });
