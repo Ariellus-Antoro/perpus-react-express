@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8000/api';
+// 1. TAMBAHKAN ASSET_URL
+const ASSET_URL = 'http://localhost:8000'; 
 
 const fallbackPendingVerifications = [
   { 
@@ -52,10 +54,9 @@ export default function KelolaVerifikasiAdmin() {
 
   useEffect(() => {
     fetchPendingData();
-
   }, []);
 
- const handleStatusAction = async (userId, newStatus) => {
+  const handleStatusAction = async (userId, newStatus) => {
     try {
       await axios.patch(`${API_BASE_URL}/admin/members/${userId}/status`, 
         { 
@@ -65,7 +66,6 @@ export default function KelolaVerifikasiAdmin() {
         getAuthHeader()
       );
       
-      // PERBAIKAN: Gunakan setPendingList sesuai dengan nama state di komponen ini
       setPendingList(prev => prev.filter(user => user.id !== userId));
       alert(`Berhasil mengubah status menjadi ${newStatus}`);
     } catch (err) {
@@ -73,16 +73,32 @@ export default function KelolaVerifikasiAdmin() {
     }
   };
 
+  // 2. TAMBAHKAN FUNGSI PEMBACA URL KTP DI SINI
+  const getKtpImage = (userObj) => {
+    // Ambil nilai dari kolom apa pun yang mungkin dikirim oleh backend
+    const ktpPath = userObj.ktp || userObj.ktp_photo || userObj.ktp_url || userObj.photo;
+
+    // Fallback jika tidak ada data KTP sama sekali
+    if (!ktpPath) return 'https://placehold.co/400x250/e7e5e4/a8a29e?text=No+KTP';
+    
+    // Jika data sudah berupa URL lengkap (misal dari data dummy/Unsplash)
+    if (ktpPath.startsWith('http')) return ktpPath;
+    
+    // Jika path dari database sudah mengandung '/uploads'
+    if (ktpPath.startsWith('/uploads')) return `${ASSET_URL}${ktpPath}`;
+    
+    // Jika data hanya berupa nama file murni (misal: 17848074...jpg)
+    return `${ASSET_URL}/uploads/ktp/${ktpPath}`;
+  };
+
   return (
     <div className="space-y-6 text-stone-900 font-body">
-      {/* HEADER BANNER */}
       <div className="py-2">
         <span className="text-[11px] uppercase tracking-widest font-label font-bold text-amber-800">VALIDASI KEANGGOTAAN</span>
         <h1 className="text-2xl font-headline font-bold text-stone-950 mt-0.5">Verifikasi Admin</h1>
         <p className="text-xs font-body text-stone-600">Periksa data diri lengkap dan pratinjau foto KTP pendaftar baru sebelum memberikan persetujuan.</p>
       </div>
 
-      {/* TABEL VERIFIKASI */}
       <div className="overflow-x-auto border border-black bg-white shadow-xs">
         <table className="w-full text-left text-sm font-body">
           <thead className="bg-amber-100 text-stone-950 border-b border-black font-label">
@@ -102,48 +118,57 @@ export default function KelolaVerifikasiAdmin() {
                 <td colSpan="7" className="p-6 text-center text-stone-500 font-body">Tidak ada pendaftar yang menunggu verifikasi.</td>
               </tr>
             ) : (
-              pendingList.map((user) => (
-                <tr key={user.id} className="hover:bg-amber-50/50 transition">
-                  <td className="p-3">
-                    <img
-                      src={user.ktp_photo || user.ktp || 'https://via.placeholder.com/120x80'}
-                      alt={`KTP ${user.full_name}`}
-                      onClick={() => setSelectedKtp(user.ktp_photo || user.ktp || 'https://via.placeholder.com/120x80')}
-                      className="w-16 h-10 object-cover rounded-lg border border-black shadow-xs cursor-pointer hover:opacity-80 transition"
-                      title="Klik untuk memperbesar foto KTP"
-                    />
-                  </td>
-                  <td className="p-3">
-                    <p className="font-bold text-stone-950">{user.full_name}</p>
-                    <p className="text-xs text-stone-600">Email: {user.email}</p>
-                    <p className="text-xs text-stone-600">Telp: {user.phone || '-'}</p>
-                  </td>
-                  <td className="p-3 font-mono text-xs text-stone-700">{user.nik}</td>
-                  <td className="p-3 text-stone-700 text-xs font-medium">{user.gender || '-'}</td>
-                  <td className="p-3 text-stone-700 text-xs max-w-xs truncate" title={user.address}>
-                    {user.address || '-'}
-                  </td>
-                  <td className="p-3">
-                    <span className="px-2.5 py-1 text-[11px] font-label font-bold bg-amber-200 text-stone-950 border border-black rounded-full shadow-xs">
-                      {user.account_status || user.status || 'PENDING'}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right space-x-2">
-                    <button
-                      onClick={() => handleStatusAction(user.id, 'REJECTED')}
-                      className="px-4 py-1.5 text-xs font-label font-semibold text-rose-700 border border-rose-500 rounded-lg hover:bg-rose-50 shadow-xs inline-flex items-center gap-1 transition"
-                    >
-                      <span>&times;</span> Tolak
-                    </button>
-                    <button
-                      onClick={() => handleStatusAction(user.id, 'APPROVED')}
-                      className="px-4 py-1.5 text-xs font-label font-bold text-amber-100 bg-stone-700 hover:bg-stone-800 rounded-lg shadow-xs border border-stone-800 inline-flex items-center gap-1 transition"
-                    >
-                      <span>&#10003;</span> Terima
-                    </button>
-                  </td>
-                </tr>
-              ))
+              pendingList.map((user) => {
+                // 3. TANGKAP URL KTP YANG SUDAH JADI DI SINI
+                const ktpImageUrl = getKtpImage(user);
+                
+                return (
+                  <tr key={user.id} className="hover:bg-amber-50/50 transition">
+                    <td className="p-3">
+                      <img
+                        // 4. GUNAKAN URL KTP YANG SUDAH DI-GENERATE
+                        src={ktpImageUrl}
+                        alt={`KTP ${user.full_name}`}
+                        onClick={() => setSelectedKtp(ktpImageUrl)}
+                        className="w-16 h-10 object-cover rounded-lg border border-black shadow-xs cursor-pointer hover:opacity-80 transition"
+                        title="Klik untuk memperbesar foto KTP"
+                        onError={(e) => {
+                          e.target.src = 'https://placehold.co/400x250/e7e5e4/a8a29e?text=Error+Load+KTP';
+                        }}
+                      />
+                    </td>
+                    <td className="p-3">
+                      <p className="font-bold text-stone-950">{user.full_name}</p>
+                      <p className="text-xs text-stone-600">Email: {user.email}</p>
+                      <p className="text-xs text-stone-600">Telp: {user.phone || '-'}</p>
+                    </td>
+                    <td className="p-3 font-mono text-xs text-stone-700">{user.nik}</td>
+                    <td className="p-3 text-stone-700 text-xs font-medium">{user.gender || '-'}</td>
+                    <td className="p-3 text-stone-700 text-xs max-w-xs truncate" title={user.address}>
+                      {user.address || '-'}
+                    </td>
+                    <td className="p-3">
+                      <span className="px-2.5 py-1 text-[11px] font-label font-bold bg-amber-200 text-stone-950 border border-black rounded-full shadow-xs">
+                        {user.account_status || user.status || 'PENDING'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      <button
+                        onClick={() => handleStatusAction(user.id, 'REJECTED')}
+                        className="px-4 py-1.5 text-xs font-label font-semibold text-rose-700 border border-rose-500 rounded-lg hover:bg-rose-50 shadow-xs inline-flex items-center gap-1 transition"
+                      >
+                        <span>&times;</span> Tolak
+                      </button>
+                      <button
+                        onClick={() => handleStatusAction(user.id, 'APPROVED')}
+                        className="px-4 py-1.5 text-xs font-label font-bold text-amber-100 bg-stone-700 hover:bg-stone-800 rounded-lg shadow-xs border border-stone-800 inline-flex items-center gap-1 transition"
+                      >
+                        <span>&#10003;</span> Terima
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
