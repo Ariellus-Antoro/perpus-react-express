@@ -1,4 +1,8 @@
-const prisma = require("../config/prisma");
+const prisma = require("../config/db");
+
+const { PaymentMethod } = require("@prisma/client");
+
+const VALID_PAYMENT_METHODS = Object.values(PaymentMethod);
 
 async function getAllFines(user_id, role) {
   // admin lihat semua, member cuma lihat denda dari peminjaman miliknya sendiri
@@ -43,7 +47,7 @@ async function getFineById(id) {
   });
 }
 
-async function payFine(fine_id, user_id, role) {
+async function payFine(fine_id, user_id, role, payment_method) {
   const fine = await getFineById(fine_id);
 
   if (!fine) {
@@ -59,10 +63,18 @@ async function payFine(fine_id, user_id, role) {
     throw { status: 400, message: "Denda ini sudah dibayar" };
   }
 
+  if (!payment_method || !VALID_PAYMENT_METHODS.includes(payment_method)) {
+    throw {
+      status: 400,
+      message: `payment_method wajib diisi, salah satu dari: ${VALID_PAYMENT_METHODS.join(", ")}`,
+    };
+  }
+
   return await prisma.fines.update({
     where: { id: Number(fine_id) },
     data: {
       payment_status: "PAID",
+      payment_method,
       payment_date: new Date(),
     },
   });

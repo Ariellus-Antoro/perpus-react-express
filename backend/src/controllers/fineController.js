@@ -59,8 +59,8 @@ async function pay(req, res) {
     const { id } = req.params;
     const user_id = req.user.id;
     const role = req.user.role;
-
-    const fine = await fineService.payFine(id, user_id, role);
+    const { payment_method } = req.body; 
+    const fine = await fineService.payFine(id, user_id, role, payment_method);
 
     res.status(200).json({
       status: "success",

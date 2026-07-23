@@ -1,5 +1,5 @@
 const prisma = require("../config/db");
-const prisma = require("../config/prisma"); // FIX: sebelumnya salah import dari config/db (pool MySQL lama)
+
 
 const MAX_ACTIVE_BORROWINGS = 5;
 const BORROW_DURATION_DAYS = 7;
@@ -73,15 +73,14 @@ async function getAllBorrowings(user_id, role) {
 }
 
 async function getBorrowingById(id, user_id, role) {
+  // FIX: findUnique tidak bisa dikombinasi dengan field non-unique (user_id).
+  // Harus pakai findFirst supaya kombinasi id + user_id (buat validasi kepemilikan) bisa jalan.
   const where =
     role === "ADMIN"
       ? { id: Number(id) }
-      : {
-          id: Number(id),
-          user_id: Number(user_id),
-        };
+      : { id: Number(id), user_id: Number(user_id) };
 
-  return await prisma.borrowings.findUnique({
+  return await prisma.borrowings.findFirst({
     where,
     include: {
       book: true,
@@ -119,8 +118,7 @@ async function createBorrowingsBulk(user_id, book_ids) {
       });
 
       if (!book) throw new Error(`Buku dengan id ${book_id} tidak ditemukan`);
-      if (book.available <= 0)
-        throw new Error(`Stok buku "${book.title}" habis`);
+      if (book.available <= 0) throw new Error(`Stok buku "${book.title}" habis`);
 
       const existingBorrowing = await tx.borrowings.findFirst({
         where: {
@@ -131,9 +129,7 @@ async function createBorrowingsBulk(user_id, book_ids) {
       });
 
       if (existingBorrowing) {
-        throw new Error(
-          `Kamu masih memiliki peminjaman aktif untuk buku "${book.title}"`,
-        );
+        throw new Error(`Kamu masih memiliki peminjaman aktif untuk buku "${book.title}"`);
       }
 
       const borrowing = await tx.borrowings.create({
@@ -229,23 +225,18 @@ async function requestExtend(borrowing_id, user_id) {
   }
 
   if (borrowing.status !== "BORROWED") {
-    throw {
-      status: 400,
-      message: "Peminjaman ini tidak bisa diajukan perpanjangan",
-    };
+    throw { status: 400, message: "Peminjaman ini tidak bisa diajukan perpanjangan" };
   }
 
   if (borrowing.extend_count >= MAX_EXTEND_COUNT) {
     throw {
       status: 400,
-      message:
-        "Peminjaman ini sudah pernah diperpanjang, tidak bisa diperpanjang lagi",
+      message: "Peminjaman ini sudah pernah diperpanjang, tidak bisa diperpanjang lagi",
     };
   }
 
   const now = new Date();
-  const hoursUntilDue =
-    (new Date(borrowing.due_date).getTime() - now.getTime()) / (1000 * 60 * 60);
+  const hoursUntilDue = (new Date(borrowing.due_date).getTime() - now.getTime()) / (1000 * 60 * 60);
 
   if (hoursUntilDue < EXTEND_MIN_HOURS_BEFORE_DUE) {
     throw {
@@ -270,10 +261,7 @@ async function confirmExtend(borrowing_id) {
   }
 
   if (borrowing.status !== "REQUEST_EXTEND") {
-    throw {
-      status: 400,
-      message: "Peminjaman ini belum diajukan perpanjangan oleh user",
-    };
+    throw { status: 400, message: "Peminjaman ini belum diajukan perpanjangan oleh user" };
   }
 
   const newDueDate = new Date(borrowing.due_date);
@@ -299,10 +287,7 @@ async function rejectExtend(borrowing_id) {
   }
 
   if (borrowing.status !== "REQUEST_EXTEND") {
-    throw {
-      status: 400,
-      message: "Peminjaman ini belum diajukan perpanjangan",
-    };
+    throw { status: 400, message: "Peminjaman ini belum diajukan perpanjangan" };
   }
 
   return await prisma.borrowings.update({
