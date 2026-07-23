@@ -2,73 +2,87 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../services/api';
 
-const initialForm = {
-  full_name: '',
-  nik: '',
-  email: '',
-  phone: '',
-  address: '',
-  ktp: '',
-  password: '',
-  confirmPassword: '',
-};
+export default function Register() {
+  const [formData, setFormData] = useState({
+    nik: '',
+    full_name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    address: '',
+    ktpFile: null
+  });
 
-function Register() {
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+  const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
-  const [form, setForm] = useState(initialForm);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setForm((prev) => ({ ...prev, ktp: file }));
-    }
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+  const handleFileChange = (e) => {
+    setFormData({
+      ...formData,
+      ktpFile: e.target.files[0] 
+    });
+  };
 
-    if (form.password !== form.confirmPassword) {
-      setError('Konfirmasi password tidak sama');
+  const handleSubmit = async (e) => {
+    
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg(''); // Diperbaiki dari setSuccess
+
+    // Diperbaiki dari form ke formData
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMsg('Konfirmasi password tidak sama');
+      return;
+    }
+    
+    setLoading(true);
+
+    const submitData = new FormData();
+    submitData.append('nik', formData.nik);
+    submitData.append('full_name', formData.full_name);
+    submitData.append('email', formData.email);
+    submitData.append('password', formData.password);
+    submitData.append('phone', formData.phone);
+    submitData.append('address', formData.address);
+    
+    if (formData.ktpFile) {
+      submitData.append('ktp', formData.ktpFile);
+    } else {
+      setErrorMsg('Foto KTP wajib diunggah!');
+      setLoading(false); // Pastikan loading berhenti
       return;
     }
 
-    setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('full_name', form.full_name);
-      formData.append('nik', form.nik);
-      formData.append('email', form.email);
-      formData.append('phone', form.phone);
-      formData.append('address', form.address);
-      formData.append('password', form.password);
-      if (form.ktp) {
-        formData.append('ktp', form.ktp);
-      }
+      await registerUser(submitData);
+      
+      setSuccessMsg('Pendaftaran berhasil! Silakan tunggu persetujuan Admin.');
+      
+      setLoading(false);
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
 
-      const res = await registerUser(formData);
-      setSuccess(res.message || 'Registrasi berhasil, menunggu verifikasi admin.');
-      setTimeout(() => navigate('/login'), 1500);
-    } catch (err) {
-      setError(err.message || 'Gagal mendaftar. Silakan coba lagi.');
-    } finally {
+    } catch (error) {
+      setErrorMsg(error.message);
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen flex text-stone-900">
-      {/* Left Banner Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-amber-50/80 text-stone-900 flex-col justify-center px-16 border-r border-black relative overflow-hidden">
-        {/* Element Aksen Dekoratif */}
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-200/50 blur-3xl pointer-events-none"></div>
         <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-amber-300/30 blur-3xl pointer-events-none"></div>
 
@@ -93,14 +107,17 @@ function Register() {
             <p className="text-sm font-body text-stone-600">Daftar sebagai anggota Perpustakaan Digital</p>
           </div>
 
-          {error && (
+          {/* Diperbaiki dari error ke errorMsg */}
+          {errorMsg && (
             <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-400 text-rose-700 text-sm font-medium px-4 py-3 shadow-xs">
-              {error}
+              {errorMsg}
             </div>
           )}
-          {success && (
+          
+          {/* Diperbaiki dari success ke successMsg */}
+          {successMsg && (
             <div className="mb-5 rounded-2xl bg-amber-100 border border-black text-stone-950 text-sm font-medium px-4 py-3 shadow-xs">
-              {success}
+              {successMsg}
             </div>
           )}
 
@@ -112,7 +129,7 @@ function Register() {
                   type="text"
                   name="full_name"
                   placeholder="Nama lengkap"
-                  value={form.full_name}
+                  value={formData.full_name} 
                   onChange={handleChange}
                   required
                   className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
@@ -125,7 +142,7 @@ function Register() {
                   type="text"
                   name="nik"
                   placeholder="Nomor Induk Kependudukan"
-                  value={form.nik}
+                  value={formData.nik}
                   onChange={handleChange}
                   maxLength={20}
                   required
@@ -140,7 +157,7 @@ function Register() {
                 type="email"
                 name="email"
                 placeholder="nama@email.com"
-                value={form.email}
+                value={formData.email}
                 onChange={handleChange}
                 required
                 className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
@@ -154,23 +171,13 @@ function Register() {
                   type="tel"
                   name="phone"
                   placeholder="08xxxxxxxxxx"
-                  value={form.phone}
+                  value={formData.phone}
                   onChange={handleChange}
                   maxLength={15}
                   className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
                 />
               </label>
 
-              <label className="block">
-                <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">Nomor KTP</span>
-                <input
-                  type="text"
-                  name="ktp_number"
-                  placeholder="Nomor KTP (opsional)"
-                  onChange={handleChange}
-                  className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
-                />
-              </label>
             </div>
 
             <div>
@@ -192,7 +199,7 @@ function Register() {
                 type="text"
                 name="address"
                 placeholder="Alamat lengkap"
-                value={form.address}
+                value={formData.address}
                 onChange={handleChange}
                 className="w-full rounded-2xl border border-black bg-white px-4 py-2.5 text-sm text-stone-900 outline-none focus:ring-2 focus:ring-stone-900/20 transition-all shadow-xs"
               />
@@ -205,7 +212,7 @@ function Register() {
                   type="password"
                   name="password"
                   placeholder="Minimal 6 karakter"
-                  value={form.password}
+                  value={formData.password}
                   onChange={handleChange}
                   minLength={6}
                   required
@@ -219,7 +226,7 @@ function Register() {
                   type="password"
                   name="confirmPassword"
                   placeholder="Ulangi password"
-                  value={form.confirmPassword}
+                  value={formData.confirmPassword}
                   onChange={handleChange}
                   minLength={6}
                   required
@@ -248,5 +255,3 @@ function Register() {
     </div>
   );
 }
-
-export default Register;
