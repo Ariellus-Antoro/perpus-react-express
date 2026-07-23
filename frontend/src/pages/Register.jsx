@@ -63,7 +63,7 @@ export default function Register() {
 
     try {
       // Mengirimkan data registrasi dengan FormData dan header multipart
-      const res = await axios.post('http://localhost:8000/api/auth/register', submitData, {
+      const res = await axios.post('http://localhost:8080/api/auth/register', submitData, {
         headers: {
           'Content-Type': 'multipart/form-data' 
         }
@@ -141,7 +141,7 @@ export default function Register() {
               <label className="block">
                 <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">NIK</span>
                 <input
-                  type="text"
+                  type="number"
                   name="nik"
                   placeholder="Nomor Induk Kependudukan"
                   value={formData.nik}
@@ -170,7 +170,7 @@ export default function Register() {
               <label className="block">
                 <span className="block text-sm font-label font-semibold text-stone-900 mb-1.5">No. HP</span>
                 <input
-                  type="tel"
+                  type="number"
                   name="phone"
                   placeholder="08xxxxxxxxxx"
                   value={formData.phone}

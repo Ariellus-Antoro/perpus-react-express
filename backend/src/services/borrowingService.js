@@ -8,68 +8,144 @@ const EXTEND_MIN_HOURS_BEFORE_DUE = 5; // request ditolak kalau kurang dari 5 ja
 const MAX_EXTEND_COUNT = 1; // perpanjangan cuma boleh 1x per peminjaman
 const FINE_PER_DAY = 10000; // Rp 10.000 / hari telat
 
+function getDisplayStatus(borrowing) {
+  if (
+    borrowing.status === "BORROWED" &&
+    new Date() > new Date(borrowing.due_date)
+  ) {
+    return "LATE";
+  }
+
+  return borrowing.status;
+};
+
 async function countActiveBorrowings(user_id) {
   return await prisma.borrowings.count({
     where: {
       user_id: Number(user_id),
-      status: { in: ["BORROWED", "REQUEST_EXTEND", "LATE"] },
+      status: { 
+        in: [
+          "PENDING","BORROWED", "REQUEST_EXTEND"
+        ] 
+      },
     },
   });
-}
+};
 
 async function getBookById(book_id) {
   return await prisma.books.findFirst({
     where: { id: Number(book_id), deleted_at: null },
   });
-}
+};
 
 async function findActiveBorrowingForBook(user_id, book_id) {
   return await prisma.borrowings.findFirst({
     where: {
       user_id: Number(user_id),
       book_id: Number(book_id),
-      status: { in: ["BORROWED", "REQUEST_EXTEND", "LATE"] },
+      status: { 
+        in: [
+          "PENDING",
+          "BORROWED", 
+          "REQUEST_EXTEND", 
+          ]
+        },
+    },
+  });
+};
+
+async function createBorrowing(user_id, book_id) {
+  const initial_date = new Date();
+
+  // const borrow_date = new Date();
+  // const due_date = new Date();
+  // due_date.setDate(due_date.getDate() + BORROW_DURATION_DAYS);
+  return await prisma.borrowings.create({
+    data: {
+      user_id: Number(user_id),
+      book_id: Number(book_id),
+      borrow_date: initial_date,
+      due_date: initial_date, 
+      status: "PENDING", // Status Awal
     },
   });
 }
 
-async function createBorrowing(user_id, book_id) {
+async function approveBorrowing(borrowing_id) {
+  const borrowing = await prisma.borrowings.findUnique({
+    where: { id: Number(borrowing_id) },
+    include: { book: true } // Ambil data buku untuk cek stok
+  });
+
+  if (!borrowing) throw { status: 404, message: "Data peminjaman tidak ditemukan" };
+  if (borrowing.status !== "PENDING") throw { status: 400, message: "Hanya peminjaman berstatus PENDING yang dapat disetujui" };
+  
+  
+  if (borrowing.book.available <= 0) throw { status: 400, message: "Stok buku sudah habis, persetujuan dibatalkan." };
+
   const borrow_date = new Date();
   const due_date = new Date();
-  due_date.setDate(due_date.getDate() + BORROW_DURATION_DAYS);
+  due_date.setDate(due_date.getDate() + BORROW_DURATION_DAYS); 
 
   return await prisma.$transaction(async (tx) => {
-    const borrowing = await tx.borrowings.create({
-      data: {
-        user_id: Number(user_id),
-        book_id: Number(book_id),
-        borrow_date,
-        due_date,
-        status: "BORROWED",
+    const updatedBorrowing = await tx.borrowings.update({
+      where: { id: Number(borrowing_id) },
+      data: { 
+        status: "BORROWED", 
+        borrow_date, 
+        due_date 
       },
     });
 
     await tx.books.update({
-      where: { id: Number(book_id) },
-      data: { available: { decrement: 1 } },
+      where: { id: borrowing.book_id },
+      data: { available: { decrement: 1 } }, // Kurangi stok SEKARANG
     });
 
-    return borrowing;
+    return updatedBorrowing;
+  });
+}
+
+async function rejectBorrowing(borrowing_id) {
+  const borrowing = await prisma.borrowings.findUnique({
+    where: { id: Number(borrowing_id) },
+  });
+
+  if (!borrowing) throw { status: 404, message: "Data peminjaman tidak ditemukan" };
+  if (borrowing.status !== "PENDING") throw { status: 400, message: "Hanya peminjaman berstatus PENDING yang dapat ditolak" };
+
+  return await prisma.borrowings.update({
+    where: { id: Number(borrowing_id) },
+    data: { status: "REJECTED" },
   });
 }
 
 async function getAllBorrowings(user_id, role) {
+
   const where = role === "ADMIN" ? {} : { user_id: Number(user_id) };
 
-  return await prisma.borrowings.findMany({
-    where,
-    include: {
-      book: true,
-      user: { select: { id: true, full_name: true, email: true } },
-      fine: true,
+  const borrowings= await prisma.borrowings.findMany({
+  where,
+  include: {
+    book: true,
+    user: {
+      select: {
+        id: true,
+        full_name: true,
+        email: true,
+      },
     },
-    orderBy: { created_at: "desc" },
+    fine: true,
+  },
+    orderBy: { 
+      created_at: "desc",
+    },
   });
+
+  return borrowings.map((b) =>({
+    ...b,
+    status: getDisplayStatus(b),
+  }));
 }
 
 async function getBorrowingById(id, user_id, role) {
@@ -80,14 +156,30 @@ async function getBorrowingById(id, user_id, role) {
       ? { id: Number(id) }
       : { id: Number(id), user_id: Number(user_id) };
 
-  return await prisma.borrowings.findFirst({
+  const borrowing = await prisma.borrowings.findFirst({
     where,
     include: {
       book: true,
-      user: { select: { id: true, full_name: true, email: true } },
+      user: {
+        select: {
+          id: true,
+          full_name: true,
+          email: true,
+        },
+      },
       fine: true,
     },
   });
+
+  if (!borrowing) {
+    return null;
+  }
+
+  return {
+    ...borrowing,
+    status: getDisplayStatus(borrowing),
+  };
+
 }
 
 async function validateBatchLimit(user_id, book_ids) {
@@ -124,7 +216,7 @@ async function createBorrowingsBulk(user_id, book_ids) {
         where: {
           user_id: Number(user_id),
           book_id: Number(book_id),
-          status: { in: ["BORROWED", "REQUEST_EXTEND", "LATE"] },
+          status: { in: ["BORROWED", "REQUEST_EXTEND"] },
         },
       });
 
@@ -177,20 +269,22 @@ async function confirmReturn(borrowing_id) {
     throw { status: 404, message: "Data peminjaman tidak ditemukan" };
   }
 
-  if (!["BORROWED", "LATE"].includes(borrowing.status)) {
-    throw { status: 400, message: "Buku ini tidak sedang dipinjam" };
+  if (borrowing.status !== "BORROWED") {
+    throw {
+      status: 400,
+      message: "Buku sudah dikembalikan atau status peminjaman tidak valid",
+    };
   }
 
   const return_date = new Date();
   const lateDays = calculateLateDays(borrowing.due_date, return_date);
   const fineAmount = lateDays * FINE_PER_DAY;
-  const finalStatus = lateDays > 0 ? "LATE" : "RETURNED";
 
   return await prisma.$transaction(async (tx) => {
     const updatedBorrowing = await tx.borrowings.update({
       where: { id: Number(borrowing_id) },
       data: {
-        status: finalStatus,
+        status: "RETURNED",
         return_date,
       },
     });
@@ -228,6 +322,14 @@ async function requestExtend(borrowing_id, user_id) {
     throw { status: 400, message: "Peminjaman ini tidak bisa diajukan perpanjangan" };
   }
 
+  const now = new Date();
+  if (new Date(borrowing.due_date) < now) {
+    throw { 
+      status: 400, 
+      message: "Buku sudah melewati batas waktu (terlambat). Tidak bisa diperpanjang, silakan kembalikan dan bayar denda." 
+    };
+  }
+
   if (borrowing.extend_count >= MAX_EXTEND_COUNT) {
     throw {
       status: 400,
@@ -235,7 +337,11 @@ async function requestExtend(borrowing_id, user_id) {
     };
   }
 
-  const now = new Date();
+  return await prisma.borrowings.update({
+    where: { id: Number(borrowing_id) },
+    data: { status: "REQUEST_EXTEND" },
+  });
+
   const hoursUntilDue = (new Date(borrowing.due_date).getTime() - now.getTime()) / (1000 * 60 * 60);
 
   if (hoursUntilDue < EXTEND_MIN_HOURS_BEFORE_DUE) {
@@ -296,6 +402,42 @@ async function rejectExtend(borrowing_id) {
   });
 }
 
+async function rejectBorrowing(borrowing_id) {
+  const borrowing = await prisma.borrowings.findUnique({
+    where: { id: Number(borrowing_id) },
+  });
+
+  if (!borrowing) throw { status: 404, message: "Data peminjaman tidak ditemukan" };
+  if (borrowing.status !== "PENDING") throw { status: 400, message: "Hanya peminjaman berstatus PENDING yang dapat ditolak" };
+
+  // Hapus 
+  return await prisma.borrowings.delete({
+    where: { id: Number(borrowing_id) },
+  });
+}
+
+async function verifyFinePayment(borrowing_id) {
+  const fine = await prisma.fines.findUnique({
+    where: { borrowing_id: Number(borrowing_id) }
+  });
+
+  if (!fine) throw { status: 404, message: "Data denda tidak ditemukan" };
+  if (fine.payment_status === "PAID") throw { status: 400, message: "Denda ini sudah lunas" };
+
+  return await prisma.fines.update({
+    where: { borrowing_id: Number(borrowing_id) },
+    data: {
+      payment_status: "PAID",
+      payment_date: new Date(),
+      payment_method: "E_WALLET", // Fallback untuk Cash
+    },
+  });
+}
+
+
+
+
+
 module.exports = {
   MAX_ACTIVE_BORROWINGS,
   countActiveBorrowings,
@@ -310,4 +452,8 @@ module.exports = {
   requestExtend,
   confirmExtend,
   rejectExtend,
+  getDisplayStatus,
+  approveBorrowing,
+  rejectBorrowing,
+  verifyFinePayment,
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
@@ -17,6 +17,11 @@ export default function Buku() {
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   // Jika ada data 'selectedBook' yang dikirim dari halaman Home, langsung jadikan state awal!
   const [selectedBook, setSelectedBook] = useState(location.state?.selectedBook || null);
@@ -74,14 +79,34 @@ export default function Buku() {
     if (!coverPath) return 'https://placehold.co/300x420/e7e5e4/a8a29e?text=No+Cover';
     if (coverPath.startsWith('http')) return coverPath;
     
-    // Sesuaikan dengan struktur folder backend Anda
-    // Jika di KelolaBukuAdmin Anda menggunakan /uploads/ saja, ikuti ini:
     return `${ASSET_URL}/uploads/${coverPath}`; 
   };
 
+  const handleBorrow = async () =>{
+    if (!selectedBook) return;
+    setErrorMsg('');
+    setSuccessMsg('');
+    setSubmitting(true);
+    try {
+      const res = await api.post('/borrow', { book_id: selectedBook.id });
+      
+      if (res.status === 'success' || res.data) {
+        setSuccessMsg('Pengajuan pinjam terkirim! Menunggu persetujuan Admin.');
+        
+        setTimeout(() => {
+          navigate('/dipinjam');
+        }, 2000);
+      }
+    } catch(err){
+        const message = err.response?.data?.message || err.message || 'Gagal meminjam buku. Pastikan Anda sudah login.';
+        setErrorMsg(message);
+    } finally{
+      setSubmitting(false);
+    }
+  };
 
-  // Jika ada buku yang dipilih, tampilkan UI Detail
-  
+
+  //Render Buku
   if (selectedBook) {
     const isAvailable = selectedBook.available > 0;
 
@@ -100,12 +125,28 @@ export default function Buku() {
               </h1>
             </div>
             <button
-              onClick={() => setSelectedBook(null)}
+              onClick={() => {
+                setSelectedBook(null);
+                setErrorMsg(''); // Bersihkan pesan error saat kembali
+                setSuccessMsg('');
+              }}
               className="mt-4 md:mt-0 px-4 py-2 bg-white border border-black rounded-full text-xs font-semibold hover:bg-amber-100 transition inline-flex items-center gap-2 shadow-xs cursor-pointer"
             >
               &larr; Kembali ke daftar buku
             </button>
           </div>
+
+          {/*Notifikasi Peminjaman */}
+          {errorMsg && (
+            <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-400 text-rose-700 font-medium text-sm shadow-xs">
+              {errorMsg}
+            </div>
+          )}
+          {successMsg && (
+            <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-400 text-emerald-800 font-medium text-sm shadow-xs">
+              {successMsg}
+            </div>
+          )}
 
           {/* Grid Layout Detail Buku */}
           <div className="flex flex-col lg:flex-row gap-8">
@@ -177,10 +218,15 @@ export default function Buku() {
                 </div>
                 
                 <button 
-                  disabled={!isAvailable}
-                  className={`w-full py-3.5 rounded-xl border border-black font-label font-bold text-sm shadow-xs transition-colors ${isAvailable ? 'bg-amber-100 hover:bg-amber-200 text-stone-950 cursor-pointer' : 'bg-stone-200 text-stone-500 cursor-not-allowed opacity-70'}`}
+                  onClick={handleBorrow}
+                  disabled={!isAvailable || submitting}
+                  className={`w-full py-3.5 rounded-xl border border-black font-label font-bold text-sm shadow-xs transition-colors 
+                    ${isAvailable && !submitting ? 'bg-amber-100 hover:bg-amber-200 text-stone-950 cursor-pointer' 
+                      : 'bg-stone-200 text-stone-500 cursor-not-allowed opacity-70'
+                    }`}
                 >
-                  {isAvailable ? 'Pinjam Buku Sekarang' : 'Stok Sedang Kosong'}
+                  {submitting ?'Memproses Peminjaman ...' : isAvailable ? 'Pinjam Buku Sekarang' : 'Stok Sedang Kosong'}
+                  
                 </button>
               </div>
 

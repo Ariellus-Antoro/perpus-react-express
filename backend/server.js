@@ -6,7 +6,7 @@ const prisma = require("./src/config/db");
 const mainRoutes = require("./src/routes");
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 // 1. WAJIB DI ATAS: Middleware CORS harus dibaca sebelum Routes!
 app.use(

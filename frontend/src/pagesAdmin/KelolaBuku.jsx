@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import api from '../services/api';
 
-const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const emptyForm = {
   id: null,
@@ -242,7 +242,7 @@ export default function KelolaBukuAdmin() {
           <div className="bg-amber-50 rounded-3xl border border-black w-full max-w-xl p-6 shadow-xl max-h-[90vh] overflow-y-auto text-stone-900 font-body">
             <div className="flex justify-between items-center mb-4 border-b border-black pb-3">
               <h3 className="text-lg font-headline font-bold text-stone-950">
-                {isEditing ? '✏️ Edit Data Buku' : '➕ Tambah Buku Baru'}
+                {isEditing ? 'Edit Data Buku' : 'Tambah Buku Baru'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}

@@ -45,7 +45,7 @@ export default function DasboardAdmin() {
       const [resStats, resUsers, resBorrowings] = await Promise.all([
         axios.get(`${API_BASE_URL}/admin/dashboard/stats`, getAuthHeader()),
         axios.get(`${API_BASE_URL}/admin/members/pending`, getAuthHeader()),
-        axios.get(`${API_BASE_URL}/admin/borrowings/pending`, getAuthHeader()),
+        axios.get(`${API_BASE_URL}/admin/borrow/pending`, getAuthHeader()),
       ]);
 
       if (resStats.data) setStats(resStats.data);
@@ -94,7 +94,7 @@ export default function DasboardAdmin() {
 
   const handleBorrowingAction = async (borrowingId, action) => {
     try {
-      await axios.patch(`${API_BASE_URL}/admin/borrowings/${borrowingId}/${action}`, {}, getAuthHeader());
+      await axios.patch(`${API_BASE_URL}/admin/borrow/${borrowingId}/${action}`, {}, getAuthHeader());
       alert(`Peminjaman berhasil di-${action === 'approve' ? 'setujui' : 'tolak'}!`);
       fetchDashboardData();
     } catch (err) {
@@ -106,7 +106,7 @@ export default function DasboardAdmin() {
   const handleSearchReturn = async () => {
     if (!searchReturn.trim()) return alert("Masukkan NIK Member, Nama, atau ID Buku terlebih dahulu!");
     try {
-      await axios.get(`${API_BASE_URL}/admin/borrowings/search?q=${searchReturn}`, getAuthHeader());
+      await axios.get(`${API_BASE_URL}/admin/borrow/search?q=${searchReturn}`, getAuthHeader());
       alert(`Data ditemukan untuk: ${searchReturn}`);
     } catch (err) {
       alert(`[Demo Mode] Mencari data pengembalian untuk: ${searchReturn}`);

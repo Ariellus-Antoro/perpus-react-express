@@ -1,23 +1,30 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
-import { Link } from 'react-router-dom';
+import { fetchBookById, borrowBook } from '../services/api';
+
+const ASSET_URL = 'http://localhost:8080';
 
 function DetailBuku() {
-  const book = {
-    title: 'Laskar Pelangi',
-    author: 'Andrea Hirata',
-    publisher: 'Bentang Pustaka',
-    description:
-      'Laskar Pelangi adalah kisah sekelompok anak di Belitung yang berjuang untuk tetap sekolah meski dibayang-bayangi kemiskinan, persahabatan, dan mimpi besar. Buku ini menghadirkan optimisme, nilai persahabatan, dan kekuatan pendidikan.',
-    book_cover: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80',
-    year: '2005',
-    total_stock: 12,
-    available: 8,
-  };
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  // const book = {
+  //   title: 'Laskar Pelangi',
+  //   author: 'Andrea Hirata',
+  //   publisher: 'Bentang Pustaka',
+  //   description:
+  //     'Laskar Pelangi adalah kisah sekelompok anak di Belitung yang berjuang untuk tetap sekolah meski dibayang-bayangi kemiskinan, persahabatan, dan mimpi besar. Buku ini menghadirkan optimisme, nilai persahabatan, dan kekuatan pendidikan.',
+  //   book_cover: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=400&q=80',
+  //   year: '2005',
+  //   total_stock: 12,
+  //   available: 8,
+  // };
 
   return (
     <AppShell header={<Header placeholder="Cari buku, penulis..." />}>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">2
         {/* Header Section */}
         <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between border-b border-black pb-4">
           <div>

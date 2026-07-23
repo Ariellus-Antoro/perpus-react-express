@@ -238,6 +238,66 @@ async function rejectExtend(req, res) {
   }
 }
 
+async function reject(req, res) {
+  try {
+    const { id } = req.params;
+    
+    const result = await borrowingService.rejectBorrowing(id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Permintaan peminjaman berhasil ditolak dan data telah dihapus.",
+      data: result,
+    });
+  } catch (error) {
+    const statusCode = error.status || 500;
+    res.status(statusCode).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+}
+
+async function approve(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await borrowingService.approveBorrowing(id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Peminjaman berhasil disetujui. Stok buku telah dikurangi.",
+      data: result,
+    });
+  } catch (error) {
+    const statusCode = error.status || 500;
+    res.status(statusCode).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+}
+
+async function payFine(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await borrowingService.verifyFinePayment(id);
+
+    res.status(200).json({
+      status: "success",
+      message: "Pembayaran denda berhasil diverifikasi",
+      data: result,
+    });
+  } catch (error) {
+    const statusCode = error.status || 500;
+    res.status(statusCode).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+}
+
+
+
 module.exports = {
   index,
   show,
@@ -247,4 +307,7 @@ module.exports = {
   requestExtend,
   confirmExtend,
   rejectExtend,
+  reject,
+  approve,
+  payFine,
 };
