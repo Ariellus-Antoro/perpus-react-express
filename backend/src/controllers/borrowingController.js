@@ -48,7 +48,12 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    const user_id = req.user.id; // dari token, bukan dari body
+    // PERBAIKAN: Jika Admin, ambil user_id dari req.body. Jika User biasa, ambil dari token.
+    let user_id = req.user.id; 
+    if (req.user.role === "ADMIN" && req.body.user_id) {
+      user_id = req.body.user_id;
+    }
+
     const { book_id } = req.body;
 
     if (!book_id || isNaN(book_id)) {

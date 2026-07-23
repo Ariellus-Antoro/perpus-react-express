@@ -42,6 +42,7 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
+    // req.body sekarang sudah terbaca!
     const { title, author, publisher, year, category_id, total_stock } = req.body;
 
     if (!title || !author || !publisher || !year || !category_id || total_stock === undefined) {
@@ -64,6 +65,11 @@ async function store(req, res) {
         status: "error",
         message: "Kategori tidak ditemukan",
       });
+    }
+
+    // TANGKAP FILE GAMBAR: Jika ada file yang diunggah, simpan nama filenya ke req.body.book_cover
+    if (req.file) {
+      req.body.book_cover = req.file.filename;
     }
 
     const book = await bookService.createBook(req.body);
@@ -108,6 +114,11 @@ async function update(req, res) {
         status: "error",
         message: "total_stock tidak boleh negatif",
       });
+    }
+
+    // TANGKAP FILE GAMBAR: Jika Admin mengunggah cover baru, timpa data cover yang lama
+    if (req.file) {
+      req.body.book_cover = req.file.filename;
     }
 
     const book = await bookService.updateBook(id, req.body);
