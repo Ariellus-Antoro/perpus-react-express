@@ -1,25 +1,23 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const userController = require('../controllers/userController');
-const { verifyToken, verifyAdmin } = require('../middlewares/authMiddleware');
-const multer = require('multer');
+const adminController = require("../controllers/adminController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
-// Setup Multer untuk menangkap file FormData dari Frontend
-const upload = multer({ dest: 'public/uploads/ktp/' }); 
 
-router.use(verifyToken, verifyAdmin);
+router.use(authMiddleware.verifyToken);
+router.use(authMiddleware.verifyAdmin);
 
-// ==========================================
-// KELOLA MEMBER (APPROVAL & LIST)
-// ==========================================
-router.get('/members/pending', userController.getPendingMembers);
-router.patch('/members/:id/status', userController.changeStatus);
-router.get('/members', userController.getMembers);
-router.delete('/members/:id', userController.deleteMember);
 
-// ROUTE BARU: Tambah & Edit
-// Kata 'ktp' di bawah ini harus sama dengan nama field "name='ktp'" di Frontend Anda
-router.post('/members', upload.single('ktp'), userController.createMember);
-router.put('/members/:id', upload.single('ktp'), userController.updateMember);
+router.get("/dashboard/stats", adminController.getDashboardStats);
+
+
+
+router.get("/users/pending", adminController.getPendingUsers);
+
+
+router.post("/users/:id/approve", adminController.approveUser);
+
+router.post("/users/:id/reject", adminController.rejectUser);
+
 
 module.exports = router;
