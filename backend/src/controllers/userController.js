@@ -1,4 +1,4 @@
-const userService = require('../services/userService');
+const userRepository = require('../repository/userRepository');
 
 const getMembers = async(req,res)=>{
     try{
