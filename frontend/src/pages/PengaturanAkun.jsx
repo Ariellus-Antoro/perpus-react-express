@@ -23,45 +23,29 @@ const settingItems = [
     hint: "",
     icon: LockIcon,
   },
-  {
-    key: "notifikasi",
-    label: "Notifikasi",
-    hint: "Aktif",
-    icon: BellSettingIcon,
-  },
-  {
-    key: "data-ktp",
-    label: "Data KTP / Identitas",
-    hint: "Terverifikasi",
-    icon: IdCardIcon,
-  },
 ];
 
 function PengaturanAkun() {
   const { token, claims } = getSession();
   const [selected, setSelected] = useState(null);
   
-  // State untuk Form Edit Profil
   const [profileData, setProfileData] = useState({
     full_name: "",
     phone: "",
     address: "",
   });
 
-  // State untuk Form Ubah Kata Sandi
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  // State untuk status UI (Loading & Pesan)
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
-  // Mengambil data profil saat tab "Edit Profil" dibuka
   useEffect(() => {
-    setMessage(null); // Reset pesan setiap pindah tab
+    setMessage(null); 
     if (selected === "edit-profil" && token) {
       setLoading(true);
       fetchProfile(token)
@@ -79,19 +63,16 @@ function PengaturanAkun() {
         })
         .finally(() => setLoading(false));
     } else {
-      // Reset form password jika tab ditutup/pindah
       setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     }
   }, [selected, token]);
 
-  // Handler Submit Form Profil
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
     try {
-      // Memanggil API yang sudah diperbaiki
       await updateUserProfile(profileData);
       setMessage({ type: "success", text: "Profil berhasil diperbarui!" });
     } catch (err) {
@@ -101,7 +82,6 @@ function PengaturanAkun() {
     }
   };
 
-  // Handler Submit Form Password
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -114,10 +94,9 @@ function PengaturanAkun() {
     }
 
     try {
-      // Memanggil API yang sudah diperbaiki
       await changeUserPassword({
-        old_password: passwordData.oldPassword,
-        new_password: passwordData.newPassword,
+        oldPassword: passwordData.oldPassword, 
+        newPassword: passwordData.newPassword, 
       });
 
       setMessage({ type: "success", text: "Kata sandi berhasil diubah!" });
@@ -129,7 +108,6 @@ function PengaturanAkun() {
     }
   };
 
-  // Render Konten Detail Berdasarkan Pilihan
   const renderDetailContent = () => {
     if (selected === "edit-profil") {
       return (
@@ -220,13 +198,6 @@ function PengaturanAkun() {
         </form>
       );
     }
-
-    // Default view untuk Notifikasi dan Data KTP
-    return (
-      <p className="text-sm font-body text-stone-600 mt-2">
-        Fitur ini sedang dalam tahap pengembangan.
-      </p>
-    );
   };
 
   return (

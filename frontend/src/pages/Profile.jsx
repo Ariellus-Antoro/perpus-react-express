@@ -6,9 +6,8 @@ import { ChevronIcon, LogoutIcon } from '../components/icons';
 import { getSession, clearSession, fetchProfile } from '../services/api';
 
 const menuItems = [
-  { label: 'Buku Dipinjam', hint: '2 aktif', path: '/dipinjam' },
+  { label: 'Buku Dipinjam', hint: 'aktif', path: '/dipinjam' },
   { label: 'Riwayat Peminjaman', hint: '', path: '/riwayat' },
-  { label: 'Buku Favorit', hint: '', path: '/favorit' },
   { label: 'Pengaturan Akun', hint: '', path: '/pengaturan' },
 ];
 

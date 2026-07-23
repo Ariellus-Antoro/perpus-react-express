@@ -1,11 +1,8 @@
-const userService = require('../services/userService'); // PERBAIKAN: Ubah jadi userService
+const userService = require('../services/userService');
 
-// --- Fungsi Baru: Tambah Pengguna ---
 const createMember = async (req, res) => {
     try {
         const memberData = req.body;
-        
-        // Jika ada file KTP yang diupload, simpan nama filenya
         if (req.file) {
             memberData.ktp = req.file.filename; 
         }
@@ -20,13 +17,11 @@ const createMember = async (req, res) => {
     }
 };
 
-// --- Fungsi Edit yang disesuaikan dengan File Upload ---
 const updateMember = async (req, res) => {
     try {
         const userId = req.params.id;
         const updateData = req.body; 
         
-        // Jika admin mengupload KTP baru saat mengedit
         if (req.file) {
             updateData.ktp = req.file.filename;
         }
@@ -106,7 +101,6 @@ const updateProfile = async (req, res) => {
     try {
         const userId = req.user.id;
         const updateData = req.body; 
-        
 
         const result = await userService.updateUserProfile(userId, updateData);
         
@@ -122,9 +116,10 @@ const updateProfile = async (req, res) => {
 const changePassword = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { old_password, new_password } = req.body;
         
-        await userService.changeUserPassword(userId, old_password, new_password);
+        const { oldPassword, newPassword } = req.body;
+        
+        await userService.changeUserPassword(userId, oldPassword, newPassword);
         
         res.status(200).json({ message: "Kata sandi berhasil diperbarui" });
     } catch (error) {

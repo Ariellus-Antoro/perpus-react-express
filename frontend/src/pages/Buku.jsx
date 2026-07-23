@@ -5,7 +5,7 @@ import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
 import api from '../services/api';
 
-const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Buku() {
   const [query, setQuery] = useState('');

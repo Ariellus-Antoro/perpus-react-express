@@ -1,7 +1,6 @@
 const userRepo = require('../repository/userRepository');
-const bcrypt = require('bcrypt'); // Tambahkan bcrypt untuk keamanan password
+const bcrypt = require('bcrypt'); 
 
-// 1. FUNGSI BARU: Tambah Pengguna (Create)
 const createMember = async (data) => {
     // Validasi dasar
     if (!data.password) {
@@ -15,7 +14,6 @@ const createMember = async (data) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(data.password, salt);
 
-    // Siapkan payload data
     const newUserData = {
         nik: data.nik,
         full_name: data.full_name,
@@ -28,7 +26,6 @@ const createMember = async (data) => {
         ktp: data.ktp || null,
     };
 
-    // Panggil fungsi createUser dari repository
     const newUser = await userRepo.createUser(newUserData);
     return newUser;
 };
@@ -49,7 +46,6 @@ const getUserProfile = async (userId) => {
     return user;
 };
 
-// 2. FUNGSI EDIT (UNTUK ADMIN): Mendukung perubahan password, role, dan email
 const editMember = async (userId, updateData) => {
     const user = await userRepo.getUserById(userId);
 
@@ -57,7 +53,6 @@ const editMember = async (userId, updateData) => {
         throw new Error('Data Pengguna tidak ditemukan');
     }
 
-    // Daftarkan semua field yang diizinkan untuk diubah dari form
     const allowedUpdates = {
         nik: updateData.nik,
         full_name: updateData.full_name,
@@ -69,13 +64,11 @@ const editMember = async (userId, updateData) => {
         ktp: updateData.ktp
     };
 
-    // Jika admin mengisi password baru di form edit, kita hash password tersebut
     if (updateData.password && updateData.password.trim() !== '') {
         const salt = await bcrypt.genSalt(10);
         allowedUpdates.password = await bcrypt.hash(updateData.password, salt);
     }
 
-    // Bersihkan data yang undefined (tidak dikirim dari frontend) agar tidak merusak database
     Object.keys(allowedUpdates).forEach(key => {
         if (allowedUpdates[key] === undefined) {
             delete allowedUpdates[key];
@@ -142,24 +135,17 @@ const removeMember = async (userId) => {
     };
 };
 
-// ============================================================================
-// FUNGSI BARU UNTUK HALAMAN "PENGATURAN AKUN" (AKSES MEMBER)
-// ============================================================================
-
 const updateUserProfile = async (userId, updateData) => {
     const user = await userRepo.getUserById(userId);
     if (!user) {
         throw new Error('Data Pengguna tidak ditemukan');
     }
-
-    // Pembatasan akses: Member hanya boleh mengubah Nama, Telepon, dan Alamat
     const allowedUpdates = {
         full_name: updateData.full_name,
         phone: updateData.phone,
         address: updateData.address
     };
 
-    // Bersihkan field yang undefined agar query database tidak error
     Object.keys(allowedUpdates).forEach(key => {
         if (allowedUpdates[key] === undefined) {
             delete allowedUpdates[key];
@@ -169,35 +155,28 @@ const updateUserProfile = async (userId, updateData) => {
     if (Object.keys(allowedUpdates).length === 0) {
         throw new Error('Tidak ada data valid yang dikirim untuk diperbarui');
     }
-
-    // Menggunakan fungsi updateUser yang sama dari repository Anda
     const updatedUser = await userRepo.updateUser(userId, allowedUpdates);
     return updatedUser;
 };
 
 const changeUserPassword = async (userId, oldPassword, newPassword) => {
-    const user = await userRepo.getUserById(userId);
+    const user = await userRepo.getUserByIdWithPassword(userId); 
+    
     if (!user) {
         throw new Error('Data Pengguna tidak ditemukan');
     }
 
-    // 1. Verifikasi kecocokan password lama menggunakan bcrypt
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
         throw new Error('Kata sandi saat ini tidak cocok');
     }
-
-    // 2. Jika cocok, hash password baru
     const salt = await bcrypt.genSalt(10);
     const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-
-    // 3. Simpan password baru ke database (menggunakan repository Anda)
     await userRepo.updateUser(userId, { password: hashedNewPassword });
     
     return true;
 };
 
-// Ekspor semua fungsi
 module.exports = {
     createMember, 
     getAllMembers,

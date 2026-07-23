@@ -6,7 +6,7 @@ import BookCard from '../components/BookCard';
 import { fetchBooks } from '../services/api';
 
 // 1. Tambahkan konstanta ASSET_URL
-const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 function Home() {
   const [query, setQuery] = useState('');

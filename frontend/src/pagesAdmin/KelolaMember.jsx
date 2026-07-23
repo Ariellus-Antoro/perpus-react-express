@@ -4,7 +4,6 @@ import Header from '../components/Header';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
-
 const emptyForm = {
   id: null,
   nik: '',
@@ -42,14 +41,13 @@ export default function KelolaMemberAdmin() {
     try {
       const res = await axios.get(`${API_BASE_URL}/user`, getAuthHeader());
       
-      // PERBAIKAN: Cek apakah datanya array atau dibungkus dalam object { data: [...] }
       if (Array.isArray(res.data)) {
         setMembers(res.data);
       } else if (res.data && Array.isArray(res.data.data)) {
         setMembers(res.data.data);
       } else {
         console.warn("Format data tidak dikenali:", res.data);
-        setMembers([]); // Cegah crash dengan set array kosong
+        setMembers([]); 
       }
 
     } catch (err) {
@@ -63,7 +61,6 @@ export default function KelolaMemberAdmin() {
     fetchMembers();
   }, []);
 
-  // PERBAIKAN: Fungsi filter yang aman dari data null/undefined
   const filteredMembers = (Array.isArray(members) ? members : []).filter((m) => {
     const name = m?.full_name || "";
     const nik = m?.nik || "";
@@ -196,10 +193,17 @@ return (
                     <p className="font-bold text-stone-950">{member.full_name}</p>
                     <p className="text-xs font-mono text-stone-600">NIK: {member.nik}</p>
                   </td>
+                  
+                  {/* --- BAGIAN PERUBAHAN TAMPILAN: Memunculkan Nomor & Alamat --- */}
                   <td className="p-3">
                     <p className="text-stone-900 font-medium">{member.email}</p>
-                    <p className="text-xs text-stone-600">{member.phone || '-'}</p>
+                    <p className="text-xs text-stone-600 font-semibold">{member.phone || '-'}</p>
+                    <p className="text-[10px] text-stone-500 mt-1 line-clamp-2 max-w-[200px]">
+                      {member.address || 'Alamat belum diisi'}
+                    </p>
                   </td>
+                  {/* ------------------------------------------------------------- */}
+
                   <td className="p-3">
                     <span className={`px-2.5 py-1 text-[10px] font-label font-bold rounded-lg border ${
                       member.role === 'ADMIN' ? 'bg-amber-200 text-stone-950 border-black' : 'bg-stone-100 text-stone-700 border-stone-400'

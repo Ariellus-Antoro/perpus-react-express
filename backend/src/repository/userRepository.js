@@ -100,6 +100,7 @@ const getAllMembers = async () => {
             email: true,
             full_name: true,
             phone: true,
+            address: true,
             role: true, // <-- PERBAIKAN: Ditambahkan agar tabel Frontend bisa memunculkan Role
             account_status: true,
             created_at: true,
@@ -163,6 +164,14 @@ const deleteMember = async (id) => {
     });
 };
 
+const getUserByIdWithPassword = async (id) => {
+    return prisma.users.findFirst({
+        where: {
+            id: parseInt(id),
+            deleted_at: null
+        }
+    });
+};
 module.exports = {
     getUserByEmail,
     createUser,
@@ -173,4 +182,5 @@ module.exports = {
     updateMemberStatus,
     updateUser,
     deleteMember,
+    getUserByIdWithPassword
 };

@@ -6,7 +6,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     baseURL: `${API_BASE_URL}/api`,
   });
 
-  // Interceptor Req
   api.interceptors.request.use(
     (config) => {
       const { token } = getSession();
@@ -18,7 +17,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     (error) => Promise.reject(error)
   );
 
-  // Interceptor Res
   api.interceptors.response.use(
     (response) => {
       return response.data;
@@ -26,7 +24,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     (error) => {
       if (error.response && error.response.status === 401) {
         clearSession();
-        // Hanya paksa lempar ke '/login' jika user TIDAK sedang berada di halaman login.
         if (window.location.pathname !== '/login') {
           window.location.href = '/login'; 
         }
@@ -60,8 +57,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
   export function getSession() {
     const token = localStorage.getItem('token');
     const claims = token ? decodeToken(token) : null;
-
-    // Token kedaluwarsa? bersihkan otomatis.
     if (claims?.exp && claims.exp * 1000 < Date.now()) {
       localStorage.removeItem('token');
       return { token: null, claims: null };
@@ -74,8 +69,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
-
-  // --- API Service Functions (Menggunakan Axios Instance) ---
 
   export function loginUser({ email, password }) {
     console.log("loginUser dipanggil");
@@ -90,49 +83,38 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
     return api.post('/auth/logout');
   }
 
-  // ... (kode Anda sebelumnya biarkan sama)
-
 export function fetchProfile() {
   return api.get('/user/profile'); 
 }
-
-// --- FUNGSI BARU UNTUK UPDATE ---
 export function updateUserProfile(data) {
   return api.put('/user/profile', data);
 }
-
 export function changeUserPassword(data) {
   return api.put('/user/change-password', data);
 }
-// --------------------------------
-
 export function fetchBooks(limit=null) {
-  // PERBAIKAN BUG: Gunakan variabel url yang sudah dibuat
   const url = limit ? `/books?limit=${limit}` : '/books';
   return api.get(url); 
 }
-
 export function fetchBookById(id) {
   return api.get(`/books/${id}`);
 }
-
 export function borrowBook(bookId){
   return api.post('/borrow', { book_id: Number(bookId) });
 }
-
 export function approveBorrowing(borrowingId) {
   return api.post(`/borrow/${borrowingId}/approve`);
 }
-
-// Fungsi Admin: Tolak Peminjaman
 export function rejectBorrowing(borrowingId) {
   return api.post(`/borrow/${borrowingId}/reject`);
 }
-
 export function requestExtendBorrowing(borrowingId) {
   return api.post(`/borrow/${borrowingId}/extend`);
 }
 export function verifyFinePayment(borrowingId) {
   return api.post(`/borrow/${borrowingId}/fine/pay`);
+}
+export function fetchBorrowingHistory() {
+  return api.get('/borrow');
 }
 export default api;
