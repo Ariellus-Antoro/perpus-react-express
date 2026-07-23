@@ -1,9 +1,9 @@
-const prisma = require ('../config/db')
+const prisma = require('../config/db')
 
 // Prisma ORM
-const getUserByEmail = async(email) =>{
+const getUserByEmail = async (email) => {
     return prisma.users.findUnique({
-        where: {email: email}
+        where: { email: email }
     });
 };
 // Bagian Arvid
@@ -14,7 +14,7 @@ const getUserByEmail = async(email) =>{
 // }
 
 // Prisma ORM
-const createUser = async(userData) =>{
+const createUser = async (userData) => {
     return prisma.users.create({
         data: {
             nik: userData.nik,
@@ -23,7 +23,9 @@ const createUser = async(userData) =>{
             full_name: userData.full_name,
             address: userData.address,
             phone: userData.phone,
-            ktp: userData.ktp
+            ktp: userData.ktp,
+            role: userData.role, // <-- PERBAIKAN: Wajib ditambahkan
+            account_status: userData.account_status // <-- PERBAIKAN: Wajib ditambahkan
         }
     });
 };
@@ -34,10 +36,10 @@ const createUser = async(userData) =>{
 // }
 
 // Prisma ORM
-const saveSession = async(userId, token, expiresAt)=>{
+const saveSession = async (userId, token, expiresAt) => {
     return prisma.tokenSessions.create({
-        data:{
-            user_id:userId,
+        data: {
+            user_id: userId,
             token,
             expires_at: new Date(expiresAt)
         }
@@ -52,15 +54,14 @@ const saveSession = async(userId, token, expiresAt)=>{
 
 
 // Prisma ORM
-const getUserById = async (id)=>{
+const getUserById = async (id) => {
     return prisma.users.findFirst({
-        where:{
+        where: {
             id: parseInt(id),
-            deleted_at:null
+            deleted_at: null
         },
-        select:{
-            id:true,
-            id: true,
+        select: {
+            id: true, // <-- PERBAIKAN: Duplikat id:true dihapus
             nik: true,
             email: true,
             full_name: true,
@@ -79,45 +80,45 @@ const getUserById = async (id)=>{
 //     return response[0];
 // }
 
-const deleteSession = async (token)=>{
+const deleteSession = async (token) => {
     return await prisma.tokenSessions.deleteMany({
-        where:{
+        where: {
             token: token
         }
     });
 };
 
-const getAllMembers = async()=>{
+const getAllMembers = async () => {
     return await prisma.users.findMany({
-        where:{
-            role: 'MEMBER',
+        where: {
+            // PERBAIKAN: Filter role dihapus agar admin bisa melihat semua data pengguna di tabel
             deleted_at: null
         },
-
-        select:{
-            id:true,
-            nik:true,
-            email:true,
-            full_name:true,
-            phone:true,
-            account_status:true,
-            created_at:true,
+        select: {
+            id: true,
+            nik: true,
+            email: true,
+            full_name: true,
+            phone: true,
+            role: true, // <-- PERBAIKAN: Ditambahkan agar tabel Frontend bisa memunculkan Role
+            account_status: true,
+            created_at: true,
         },
-        orderBy:{
+        orderBy: {
             created_at: 'desc'
         }
     });
 };
 
-const updateMemberStatus = async(id,status)=>{
+const updateMemberStatus = async (id, status) => {
     return await prisma.users.update({
-        where:{
+        where: {
             id: Number(id)
         },
-        data:{
+        data: {
             account_status: status
         },
-        select:{
+        select: {
             id: true,
             full_name: true,
             account_status: true
@@ -125,38 +126,39 @@ const updateMemberStatus = async(id,status)=>{
     });
 };
 
-const updateUser = async(id, updateData) =>{
+const updateUser = async (id, updateData) => {
     return await prisma.users.update({
-        where:{
+        where: {
             id: Number(id)
         },
-
-        data:updateData,
-        select:{
-            id:true,
-            nik:true,
-            email:true,
-            full_name:true,
-            address:true,
-            phone:true,
-            ktp:true,
-            updated_at:true
+        data: updateData,
+        select: {
+            id: true,
+            nik: true,
+            email: true,
+            full_name: true,
+            address: true,
+            phone: true,
+            ktp: true,
+            role: true, // <-- PERBAIKAN: Ditambahkan
+            account_status: true, // <-- PERBAIKAN: Ditambahkan
+            updated_at: true
         }
     });
 };
 
-const deleteMember = async(id)=>{
+const deleteMember = async (id) => {
     return await prisma.users.update({
-        where:{
+        where: {
             id: Number(id)
         },
-        data:{
-            deleted_at:new Date()
+        data: {
+            deleted_at: new Date()
         },
-        select:{
-            id:true,
-            email:true,
-            deleted_at:true
+        select: {
+            id: true,
+            email: true,
+            deleted_at: true
         }
     });
 };
@@ -172,4 +174,3 @@ module.exports = {
     updateUser,
     deleteMember,
 };
-

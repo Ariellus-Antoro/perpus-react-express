@@ -18,13 +18,14 @@ const registerUser = async(userData)=>{
         full_name: userData.full_name,
         address: userData.address,
         phone: userData.phone,
-        ktp: userData.ktp 
+        ktp: userData.ktp,
+        role: 'MEMBER',            // <-- PERBAIKAN WAJIB
+        account_status: 'PENDING'  // <-- PERBAIKAN WAJIB
     };
+    
     const createdUser = await userRepo.createUser(newUser);
-
     return createdUser;
 };
-
 // async function registerUser(userData){
 //     const userAda = await userModel.getUserByEmail(userData.email);
 //     if(userAda){

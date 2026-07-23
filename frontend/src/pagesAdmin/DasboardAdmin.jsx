@@ -30,7 +30,7 @@ export default function DasboardAdmin() {
   const [searchReturn, setSearchReturn] = useState('');
 
   const [stats, setStats] = useState(fallbackStats);
-  const [pendingUsers, setPendingUsers] = useState(fallbackPendingUsers);
+  const [pendingUsers, setPendingUsers] = useState([]);
   const [pendingBorrowings, setPendingBorrowings] = useState(fallbackPendingBorrowings);
   const [loading, setLoading] = useState(false);
 
@@ -44,7 +44,7 @@ export default function DasboardAdmin() {
     try {
       const [resStats, resUsers, resBorrowings] = await Promise.all([
         axios.get(`${API_BASE_URL}/admin/dashboard/stats`, getAuthHeader()),
-        axios.get(`${API_BASE_URL}/admin/users/pending`, getAuthHeader()),
+        axios.get(`${API_BASE_URL}/admin/members/pending`, getAuthHeader()),
         axios.get(`${API_BASE_URL}/admin/borrowings/pending`, getAuthHeader()),
       ]);
 
@@ -58,18 +58,37 @@ export default function DasboardAdmin() {
     }
   };
 
+  const fetchPendingUsers = async () => {
+    try {
+      // Sesuaikan dengan endpoint backend Anda yang menyediakan data member pending
+      const res = await axios.get(`${API_BASE_URL}/admin/members/pending`, getAuthHeader());
+      setPendingUsers(res.data.data || res.data);
+    } catch (err) {
+      console.error("Gagal memuat pendaftar pending:", err);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+    fetchPendingUsers();
   }, []);
 
   const handleUserStatus = async (userId, newStatus) => {
     try {
-      await axios.patch(`${API_BASE_URL}/admin/users/${userId}/status`, { account_status: newStatus }, getAuthHeader());
-      alert(`User berhasil di-${newStatus.toLowerCase()}!`);
-      fetchDashboardData();
+      // PERBAIKAN: Kirim kedua variasi key agar diterima oleh backend dengan tepat
+      await axios.patch(`${API_BASE_URL}/admin/members/${userId}/status`, 
+        { 
+          status: newStatus,          // Digunakan jika backend membaca req.body.status
+          account_status: newStatus   // Digunakan jika backend membaca req.body.account_status
+        }, 
+        getAuthHeader()
+      );
+      
+      // Perbarui state lokal agar baris langsung hilang dari tabel
+      setPendingUsers(prev => prev.filter(user => user.id !== userId));
+      alert(`Berhasil mengubah status menjadi ${newStatus}`);
     } catch (err) {
-      setPendingUsers(prev => prev.filter(u => u.id !== userId));
-      alert(`[Demo Mode] Status user ID ${userId} diubah ke ${newStatus}`);
+      alert("Gagal memperbarui status: " + (err.response?.data?.message || err.message));
     }
   };
 

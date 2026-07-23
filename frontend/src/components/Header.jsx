@@ -1,6 +1,8 @@
 import { SearchIcon, MenuIcon, BellIcon } from './icons';
+import { useNavigate } from 'react-router-dom';
 
 function Header({ value, onChange, placeholder = 'Cari buku, penulis...' }) {
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-amber-200/60 px-4 md:px-8 py-3">
       <div className="flex items-center gap-3 w-full mx-auto">
@@ -25,12 +27,14 @@ function Header({ value, onChange, placeholder = 'Cari buku, penulis...' }) {
 
         <div className="flex items-center gap-2">
             <button
+            onClick={() => navigate('/login')}
               className="cursor-pointer px-4 h-10 rounded-xl bg-amber-50 border border-black text-stone-900 hover:bg-amber-100 transition shadow-xs text-xs uppercase tracking-wider font-label font-medium"
             >
               Login
             </button>
 
             <button
+            onClick={() => navigate('/register')}
               className="cursor-pointer px-4 h-10 rounded-xl bg-amber-50 border border-black text-stone-900 hover:bg-amber-100 transition shadow-xs text-xs uppercase tracking-wider font-label font-medium"
             >
               Register

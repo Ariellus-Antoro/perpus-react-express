@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerUser } from '../services/api';
+import axios from 'axios'; // PERBAIKAN: Import axios langsung
 
 const initialForm = {
   full_name: '',
@@ -50,15 +50,26 @@ function Register() {
       formData.append('phone', form.phone);
       formData.append('address', form.address);
       formData.append('password', form.password);
+      
       if (form.ktp) {
         formData.append('ktp', form.ktp);
       }
 
-      const res = await registerUser(formData);
-      setSuccess(res.message || 'Registrasi berhasil, menunggu verifikasi admin.');
+      // PERBAIKAN: Gunakan Axios langsung dengan Header khusus untuk file
+      // Sesuaikan port 8000 dengan port backend Anda jika berbeda
+      const res = await axios.post('http://localhost:8000/api/auth/register', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data' 
+        }
+      });
+      
+      setSuccess(res.data.message || 'Registrasi berhasil, menunggu verifikasi admin.');
       setTimeout(() => navigate('/login'), 1500);
+      
     } catch (err) {
-      setError(err.message || 'Gagal mendaftar. Silakan coba lagi.');
+      // PERBAIKAN: Tangkap pesan error dari backend jika ada
+      const errorMsg = err.response?.data?.message || err.message || 'Gagal mendaftar. Silakan coba lagi.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

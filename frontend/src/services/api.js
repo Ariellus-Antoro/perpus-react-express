@@ -22,24 +22,24 @@ async function request(path, options = {}) {
   return data;
 }
 
-// --- Auth: sesuai route backend yang ada (POST /api/login, POST /api/register) ---
-
+// --- Auth: Sesuai route backend baru (/api/auth/login & /api/auth/register) ---
 export function loginUser({ email, password }) {
-  return request('/login', {
+  return request('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 }
 
 export function registerUser(payload) {
-  return request('/register', {
+  return request('/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
+// --- Profile: Diperbarui menjadi /user/profile ---
 export function fetchProfile(token) {
-  return request('/profile', {
+  return request('/user/profile', { // <-- PERBAIKAN: Menambahkan /user
     method: 'GET',
     headers: { Authorization: `Bearer ${token}` },
   });
