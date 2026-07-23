@@ -3,7 +3,6 @@ const prisma = require("../config/db");
 async function getAllCategories() {
   return await prisma.categories.findMany({
     where: {
-      is_active: true,
       deleted_at: null,
     },
     orderBy: {

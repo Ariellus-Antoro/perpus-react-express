@@ -25,9 +25,11 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Lempar ke login kalau token expired
       clearSession();
-      window.location.href = '/login'; 
+      // Hanya paksa lempar ke '/login' jika user TIDAK sedang berada di halaman login.
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'; 
+      }
     }
 
     const errorMessage = error.response?.data?.message 
@@ -99,3 +101,5 @@ export function fetchBooks() {
 export function fetchBookById(id) {
   return api.get(`/books/${id}`);
 }
+
+export default api;

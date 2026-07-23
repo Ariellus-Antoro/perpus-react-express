@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api'; // Menggunakan API terpusat yang sudah memiliki token & error handling
 import Header from '../components/Header';
-
-const API_BASE_URL = 'http://localhost:8000/api';
-
-//Data Dummy
-const fallbackCategories = [
-  { id: 1, category_name: 'Fiksi', is_active: true, created_at: '2026-07-01 08:00:00' },
-  { id: 2, category_name: 'Non-Fiksi', is_active: true, created_at: '2026-07-01 08:10:00' },
-  { id: 3, category_name: 'Sains & Teknologi', is_active: true, created_at: '2026-07-01 08:20:00' },
-  { id: 4, category_name: 'Sejarah', is_active: true, created_at: '2026-07-01 08:30:00' },
-  { id: 5, category_name: 'Pemrograman', is_active: false, created_at: '2026-07-01 08:40:00' },
-];
 
 const emptyForm = {
   id: null,
@@ -21,7 +10,7 @@ const emptyForm = {
 
 export default function KelolaKategoriAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [categories, setCategories] = useState(fallbackCategories);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // State Modal Form (Tambah / Edit)
@@ -29,23 +18,22 @@ export default function KelolaKategoriAdmin() {
   const [formData, setFormData] = useState(emptyForm);
   const [isEditing, setIsEditing] = useState(false);
 
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return { headers: { Authorization: `Bearer ${token}` } };
-  };
-
   // Fetch Data Kategori dari Backend
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/admin/categories`, getAuthHeader());
-      if (res.data) setCategories(res.data);
+      // PERBAIKAN: Hapus '/admin'
+      const res = await api.get('/categories');
+      if (res) setCategories(res.data || res); 
     } catch (err) {
-      console.warn("Backend offline, menggunakan data fallback:", err.message);
+      console.error("Gagal mengambil data kategori:", err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  // Submit Handler (Create & Update)
+  
 
   useEffect(() => {
     fetchCategories();
@@ -53,7 +41,7 @@ export default function KelolaKategoriAdmin() {
 
   // Filter Kategori berdasarkan Search Bar
   const filteredCategories = categories.filter((c) =>
-    c.category_name.toLowerCase().includes(searchQuery.toLowerCase())
+    c.category_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Open Modal Tambah
@@ -84,31 +72,18 @@ export default function KelolaKategoriAdmin() {
     e.preventDefault();
     try {
       if (isEditing) {
-        // UPDATE KATEGORI
-        await axios.put(`${API_BASE_URL}/admin/categories/${formData.id}`, formData, getAuthHeader());
+        // PERBAIKAN: Hapus '/admin'
+        await api.put(`/categories/${formData.id}`, formData);
         alert('Kategori berhasil diperbarui!');
       } else {
-        // CREATE KATEGORI
-        await axios.post(`${API_BASE_URL}/admin/categories`, formData, getAuthHeader());
+        // PERBAIKAN: Hapus '/admin'
+        await api.post('/categories', formData);
         alert('Kategori baru berhasil ditambahkan!');
       }
       fetchCategories();
       setIsModalOpen(false);
     } catch (err) {
-      // Demo Fallback Mode
-      if (isEditing) {
-        setCategories((prev) => prev.map((c) => (c.id === formData.id ? { ...formData } : c)));
-        alert('[Demo Mode] Berhasil mengedit kategori!');
-      } else {
-        const newCategory = {
-          ...formData,
-          id: Date.now(),
-          created_at: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        };
-        setCategories((prev) => [newCategory, ...prev]);
-        alert('[Demo Mode] Berhasil menambah kategori baru!');
-      }
-      setIsModalOpen(false);
+      alert(err.message || 'Terjadi kesalahan saat menyimpan kategori.');
     }
   };
 
@@ -116,12 +91,12 @@ export default function KelolaKategoriAdmin() {
   const handleDelete = async (id) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus kategori ini?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/admin/categories/${id}`, getAuthHeader());
+      // PERBAIKAN: Hapus '/admin'
+      await api.delete(`/categories/${id}`);
       alert('Kategori berhasil dihapus!');
       fetchCategories();
     } catch (err) {
-      setCategories((prev) => prev.filter((c) => c.id !== id));
-      alert(`[Demo Mode] Kategori dengan ID ${id} berhasil dihapus`);
+      alert(err.message || 'Gagal menghapus kategori.');
     }
   };
 
@@ -137,76 +112,75 @@ export default function KelolaKategoriAdmin() {
         <p className="text-xs font-body text-stone-600">Atur taksonomi dan status keaktifan kategori koleksi buku.</p>
       </div>
 
-
-
       {/* Tabel Data Kategori */}
-      
-        <div className="flex justify-between items-center mb-4 pb-3 border-b border-black">
-          <h2 className="font-headline font-bold text-stone-950 text-lg flex items-center gap-2">
-            Daftar Kategori ({filteredCategories.length})
-          </h2>
-          {loading && <span className="text-xs font-label text-amber-800 animate-pulse font-semibold">Memuat data...</span>}
-          {/* button add kategoti */}
-          <button
-            onClick={handleOpenAddModal}
-            className="bg-amber-100 hover:bg-amber-200 text-stone-950 font-label font-bold px-4 py-2.5 rounded-xl border border-black shadow-xs transition flex items-center gap-2 text-sm text"
-          >
-            <span>+</span> Tambah Kategori
-          </button>
-        </div>
+      <div className="flex justify-between items-center mb-4 pb-3 border-b border-black">
+        <h2 className="font-headline font-bold text-stone-950 text-lg flex items-center gap-2">
+          Daftar Kategori ({filteredCategories.length})
+        </h2>
+        {loading && <span className="text-xs font-label text-amber-800 animate-pulse font-semibold">Memuat data...</span>}
+        <button
+          onClick={handleOpenAddModal}
+          className="bg-amber-100 hover:bg-amber-200 text-stone-950 font-label font-bold px-4 py-2.5 rounded-xl border border-black shadow-xs transition flex items-center gap-2 text-sm text"
+        >
+          <span>+</span> Tambah Kategori
+        </button>
+      </div>
 
-        <div className="overflow-x-auto  border border-black bg-white shadow-xs">
-          <table className="w-full text-left text-sm font-body">
-            <thead className="bg-amber-100 text-stone-950 border-b border-black font-label">
+      <div className="overflow-x-auto border border-black bg-white shadow-xs">
+        <table className="w-full text-left text-sm font-body">
+          <thead className="bg-amber-100 text-stone-950 border-b border-black font-label">
+            <tr>
+              <th className="p-3">ID</th>
+              <th className="p-3">Nama Kategori</th>
+              <th className="p-3">Status Aktif</th>
+              <th className="p-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-black/10 text-stone-900">
+            {loading ? (
               <tr>
-                <th className="p-3">ID</th>
-                <th className="p-3">Nama Kategori</th>
-                <th className="p-3">Status Aktif</th>
-                <th className="p-3">Tanggal Dibuat</th>
-                <th className="p-3 text-right">Aksi</th>
+                <td colSpan="4" className="p-6 text-center text-stone-500 font-body">Memuat data kategori...</td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-black/10 text-stone-900">
-              {filteredCategories.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="p-6 text-center text-stone-500 font-body">Tidak ada data kategori ditemukan.</td>
+            ) : filteredCategories.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="p-6 text-center text-stone-500 font-body">Tidak ada data kategori ditemukan.</td>
+              </tr>
+            ) : (
+              filteredCategories.map((cat) => (
+                <tr key={cat.id} className="hover:bg-amber-50/50 transition">
+                  <td className="p-3 font-mono text-xs text-stone-600">#{cat.id}</td>
+                  <td className="p-3 font-bold text-stone-950">{cat.category_name}</td>
+                  <td className="p-3">
+                    <span
+                      className={`px-2.5 py-1 text-xs font-label font-bold rounded-full border ${
+                        cat.is_active
+                          ? 'bg-amber-200 text-stone-950 border-black'
+                          : 'bg-stone-100 text-stone-600 border-stone-400'
+                      }`}
+                    >
+                      {cat.is_active ? 'Aktif' : 'Non-Aktif'}
+                    </span>
+                  </td>
+                  <td className="p-3 text-right space-x-2">
+                    <button
+                      onClick={() => handleOpenEditModal(cat)}
+                      className="px-3 py-1.5 text-xs font-label font-bold text-stone-950 bg-amber-100 hover:bg-amber-200 rounded-lg shadow-xs border border-black"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(cat.id)}
+                      className="px-3 py-1.5 text-xs font-label font-semibold text-rose-700 border border-rose-400 rounded-lg hover:bg-rose-50 shadow-xs"
+                    >
+                      Hapus
+                    </button>
+                  </td>
                 </tr>
-              ) : (
-                filteredCategories.map((cat) => (
-                  <tr key={cat.id} className="hover:bg-amber-50/50 transition">
-                    <td className="p-3 font-mono text-xs text-stone-600">#{cat.id}</td>
-                    <td className="p-3 font-bold text-stone-950">{cat.category_name}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-2.5 py-1 text-xs font-label font-bold rounded-full border ${cat.is_active
-                            ? 'bg-amber-200 text-stone-950 border-black'
-                            : 'bg-stone-100 text-stone-600 border-stone-400'
-                          }`}
-                      >
-                        {cat.is_active ? 'Aktif' : 'Non-Aktif'}
-                      </span>
-                    </td>
-                    <td className="p-3 text-stone-600 text-xs">{cat.created_at || '-'}</td>
-                    <td className="p-3 text-right space-x-2">
-                      <button
-                        onClick={() => handleOpenEditModal(cat)}
-                        className="px-3 py-1.5 text-xs font-label font-bold text-stone-950 bg-amber-100 hover:bg-amber-200 rounded-lg shadow-xs border border-black"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(cat.id)}
-                        className="px-3 py-1.5 text-xs font-label font-semibold text-rose-700 border border-rose-400 rounded-lg hover:bg-rose-50 shadow-xs"
-                      >
-                        Hapus
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* MODAL FORM (CREATE / EDIT KATEGORI) */}
       {isModalOpen && (
