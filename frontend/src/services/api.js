@@ -3,11 +3,15 @@
 // Untuk production, set VITE_API_URL ke alamat backend, misal https://api-domain.com
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+<<<<<<< Updated upstream
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}/api${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
   });
+=======
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+>>>>>>> Stashed changes
 
   let data = {};
   try {
