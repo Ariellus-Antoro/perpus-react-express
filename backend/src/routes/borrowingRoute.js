@@ -39,4 +39,32 @@ router.post(
   borrowingController.returnConfirm,
 );
 
+router.post(
+  "/:id/approve",
+  authMiddleware.verifyToken,
+  authMiddleware.verifyAdmin, 
+  borrowingController.approve,
+);
+
+router.post(
+  "/:id/reject",
+  authMiddleware.verifyToken,
+  authMiddleware.verifyAdmin, 
+  borrowingController.reject,
+);
+
+router.post(
+  "/:id/reject",
+  authMiddleware.verifyToken,
+  authMiddleware.verifyAdmin, 
+  borrowingController.reject
+);
+
+router.post(
+  "/:id/fine/pay",
+  authMiddleware.verifyToken,
+  authMiddleware.verifyAdmin,
+  borrowingController.payFine
+);
+
 module.exports = router;

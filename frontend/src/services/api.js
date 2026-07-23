@@ -1,6 +1,6 @@
   import axios from 'axios';
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
   const api = axios.create({
     baseURL: `${API_BASE_URL}/api`,
@@ -116,4 +116,23 @@ export function fetchBookById(id) {
   return api.get(`/books/${id}`);
 }
 
+export function borrowBook(bookId){
+  return api.post('/borrow', { book_id: Number(bookId) });
+}
+
+export function approveBorrowing(borrowingId) {
+  return api.post(`/borrow/${borrowingId}/approve`);
+}
+
+// Fungsi Admin: Tolak Peminjaman
+export function rejectBorrowing(borrowingId) {
+  return api.post(`/borrow/${borrowingId}/reject`);
+}
+
+export function requestExtendBorrowing(borrowingId) {
+  return api.post(`/borrow/${borrowingId}/extend`);
+}
+export function verifyFinePayment(borrowingId) {
+  return api.post(`/borrow/${borrowingId}/fine/pay`);
+}
 export default api;

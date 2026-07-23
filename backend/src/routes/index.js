@@ -6,6 +6,7 @@ const bookRoutes = require("./book_routes");
 const authRoute = require('./authRoutes');
 const userRoute = require('./userRoutes');
 const adminRoute = require('./adminRoutes'); 
+const borrowingRoute = require('./borrowingRoute');
 
 router.get("/", (req, res) => {
   res.status(200).json({ status: "success", message: "Testttttttt" });
@@ -16,5 +17,6 @@ router.use("/books", bookRoutes);
 router.use('/auth', authRoute);
 router.use('/user', userRoute); 
 router.use('/admin', adminRoute); 
+router.use('/borrow', borrowingRoute);
 
 module.exports = router;

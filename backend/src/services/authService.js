@@ -19,8 +19,8 @@ const registerUser = async(userData)=>{
         address: userData.address,
         phone: userData.phone,
         ktp: userData.ktp,
-        role: 'MEMBER',            // <-- PERBAIKAN WAJIB
-        account_status: 'PENDING'  // <-- PERBAIKAN WAJIB
+        role: 'MEMBER',            
+        account_status: 'PENDING' 
     };
     
     const createdUser = await userRepo.createUser(newUser);
