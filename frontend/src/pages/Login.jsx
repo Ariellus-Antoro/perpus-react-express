@@ -13,14 +13,15 @@ function Login() {
   }
 
   async function handleSubmit(e) {
+    console.log("handleSubmit dipanggil");
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       const res = await loginUser(form);
-      saveSession(res.data.token);
+      saveSession(res.token);
       
-      if (res.data?.user?.role === 'ADMIN') {
+      if (res.data.role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else {
         navigate('/');

@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { HomeIcon, BookIcon, CategoryIcon, MemberIcon, LogoutIcon, VerifikasiIcon } from './icons';
-import { clearSession } from '../services/api';
+import { logoutUser, clearSession } from '../services/api';
 
 const navItems = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: HomeIcon, end: true },
@@ -14,9 +14,19 @@ const navItems = [
 export default function SidebarAdmin() {
   const navigate = useNavigate();
 
-  function handleLogout() {
-    clearSession();
-    navigate('/login');
+  async function handleLogout() {
+    const confirmLogout = window.confirm("Yakin ingin keluar?");
+
+    if (!confirmLogout) return;
+
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      clearSession();
+      navigate('/login', { replace: true });
+    }
   }
 
   return (

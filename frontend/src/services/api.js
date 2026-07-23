@@ -1,67 +1,66 @@
+import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-async function request(path, options = {}) {
-  const headers = { ...options.headers };
+const api = axios.create({
+  baseURL: `${API_BASE_URL}/api`,
+});
 
-  //Setting FormData dan JSON
-  if (!(options.body instanceof FormData)) {
-      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+// async function request(path, options = {}) {
+//   const headers = { ...options.headers };
+
+//   //Setting FormData dan JSON
+//   if (!(options.body instanceof FormData)) {
+//       headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+//   }
+
+//   const res = await fetch(`${API_BASE_URL}/api${path}`, {
+//     ...options,
+//     headers, 
+//   });
+
+//   let data = {};
+//   try {
+//     data = await res.json();
+//   } catch {
+//   }
+
+//   if (!res.ok) {
+//     throw new Error(data.message || `Terjadi kesalahan (${res.status})`);
+//   }
+//   return data;
+// }
+
+// Interceptor Req
+api.interceptors.request.use(
+  (config) => {
+    const { token } = getSession();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Interceptor Res
+api.interceptors.response.use(
+  (response) => {
+    return response.data;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      //Lempar ke login kalo token expired
+      clearSession();
+      window.location.href = '/login'; 
+    }
+
+    const errorMessage = error.response?.data?.message 
+      || `Terjadi kesalahan (${error.response?.status || 'Network Error'})`;
+      
+    return Promise.reject(new Error(errorMessage));
   }
-
-  const res = await fetch(`${API_BASE_URL}/api${path}`, {
-    ...options,
-    headers, 
-  });
-
-  let data = {};
-  try {
-    data = await res.json();
-  } catch {
-  }
-
-  if (!res.ok) {
-    throw new Error(data.message || `Terjadi kesalahan (${res.status})`);
-  }
-  return data;
-}
-
-// --- Auth: sesuai route backend yang ada (POST /api/login, POST /api/register) ---
-
-export function loginUser({ email, password }) {
-  return request('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-export function registerUser(payload) {
-  return request('/auth/register', {
-    method: 'POST',
-    body: payload,
-  });
-}
-
-export function fetchProfile(token) {
-  return request('/user/profile', {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
-  });
-}
-
-export function fetchBooks() {
-  return request('/books', {
-    method: 'GET',
-  });
-}
-
-export function fetchBookById(id) {
-  return request(`/books/${id}`, {
-    method: 'GET',
-  });
-}
-
-// --- Sesi login (disimpan di localStorage) ---
+);
 
 function decodeToken(token) {
   try {
@@ -74,7 +73,11 @@ function decodeToken(token) {
 }
 
 export function saveSession(token) {
-  localStorage.setItem('token', token);
+  if (!token) {
+    throw new Error("Token tidak ditemukan");
+  }
+
+  localStorage.setItem("token", token);
 }
 
 export function getSession() {
@@ -93,3 +96,33 @@ export function getSession() {
 export function clearSession() {
   localStorage.removeItem('token');
 }
+
+
+
+// --- Auth: sesuai route backend yang ada (POST /api/login, POST /api/register) ---
+
+export function loginUser({ email, password }) {
+  console.log("loginUser dipanggil");
+  return api.post('/auth/login', { email, password });
+}
+
+export function registerUser(payload) {
+  return api.post('/auth/register', payload); 
+}
+
+export function logoutUser() {
+  return api.post('/auth/logout');
+}
+
+export function fetchProfile() {
+  return api.get('/user/profile'); 
+}
+
+export function fetchBooks() {
+  return api.get('/books');
+}
+
+export function fetchBookById(id) {
+  return api.get(`/books/${id}`);
+}
+

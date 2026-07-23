@@ -1,4 +1,3 @@
-const cors = require('cors'); 
 const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
@@ -30,7 +29,7 @@ router.post("/register", authController.register);
 // router.get('/user/pending', authMiddleware.verifyToken, authMiddleware.verifyAdmin, authController.getPendingUsers);
 // router.post('/pinjam', authMiddleware.verifyToken, authMiddleware.isApproved, pinjamController.buatPeminjaman);
 
-router.get("/profile", authMiddleware.verifyToken, userController.getProfile);
+// router.get("/profile", authMiddleware.verifyToken, userController.getProfile);
 router.use('/auth', authRoute);
 router.use('/user', userRoute);
 

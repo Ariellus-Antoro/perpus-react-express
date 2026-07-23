@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
+const cors = require('cors'); 
 
 // const pool = require("./src/config/db");
 const prisma = require("./src/config/db");
@@ -10,6 +11,11 @@ const mainRoutes = require("./src/routes");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
 
 app.use(express.json());
 // Akses folder 'public'
