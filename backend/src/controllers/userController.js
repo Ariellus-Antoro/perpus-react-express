@@ -102,6 +102,36 @@ const changeStatus = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const updateData = req.body; 
+        
+
+        const result = await userService.updateUserProfile(userId, updateData);
+        
+        res.status(200).json({ 
+            message: "Profil berhasil diperbarui", 
+            data: result 
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+const changePassword = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { old_password, new_password } = req.body;
+        
+        await userService.changeUserPassword(userId, old_password, new_password);
+        
+        res.status(200).json({ message: "Kata sandi berhasil diperbarui" });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getProfile,
     getMembers,
@@ -110,5 +140,7 @@ module.exports = {
     updateMember,
     deleteMember,
     getPendingMembers,
-    changeStatus
+    changeStatus,
+    updateProfile,
+    changePassword
 }
