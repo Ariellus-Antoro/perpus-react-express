@@ -18,13 +18,14 @@ const registerUser = async(userData)=>{
         full_name: userData.full_name,
         address: userData.address,
         phone: userData.phone,
-        ktp: userData.ktp 
+        ktp: userData.ktp,
+        role: 'MEMBER',            // <-- PERBAIKAN WAJIB
+        account_status: 'PENDING'  // <-- PERBAIKAN WAJIB
     };
+    
     const createdUser = await userRepo.createUser(newUser);
-
     return createdUser;
 };
-
 // async function registerUser(userData){
 //     const userAda = await userModel.getUserByEmail(userData.email);
 //     if(userAda){
@@ -53,6 +54,10 @@ const loginUser = async(email,password) =>{
     if (!isPasswordValid) {
         throw new Error('Email atau password salah');
     }
+
+    //Cek jwt di laptop Arvid (sempet masalah)
+    console.log("CEK ISI JWT SECRET:", process.env.JWT_SECRET);
+    
 
     // Buat token jwt
     const token = jwt.sign(

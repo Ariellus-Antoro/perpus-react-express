@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerUser } from '../services/api';
+import axios from 'axios'; // PERBAIKAN: Import axios langsung
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -34,12 +34,10 @@ export default function Register() {
   };
 
   const handleSubmit = async (e) => {
-    
     e.preventDefault();
     setErrorMsg('');
-    setSuccessMsg(''); // Diperbaiki dari setSuccess
+    setSuccessMsg('');
 
-    // Diperbaiki dari form ke formData
     if (formData.password !== formData.confirmPassword) {
       setErrorMsg('Konfirmasi password tidak sama');
       return;
@@ -59,27 +57,34 @@ export default function Register() {
       submitData.append('ktp', formData.ktpFile);
     } else {
       setErrorMsg('Foto KTP wajib diunggah!');
-      setLoading(false); // Pastikan loading berhenti
+      setLoading(false);
       return;
     }
 
     try {
-      await registerUser(submitData);
+      // Mengirimkan data registrasi dengan FormData dan header multipart
+      const res = await axios.post('http://localhost:8000/api/auth/register', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data' 
+        }
+      });
       
-      setSuccessMsg('Pendaftaran berhasil! Silakan tunggu persetujuan Admin.');
-      
-      setLoading(false);
+      setSuccessMsg(res.data.message || 'Pendaftaran berhasil! Silakan tunggu persetujuan Admin.');
       
       setTimeout(() => {
         navigate('/login');
       }, 2000);
 
-    } catch (error) {
-      setErrorMsg(error.message);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || 'Gagal mendaftar. Silakan coba lagi.';
+      setErrorMsg(errorMessage);
+    } finally {
       setLoading(false);
     }
   };
 
+  // (Pastikan bagian return JSX komponen Register Anda tetap ada di bawah sini)
+}
   return (
     <div style={{ backgroundColor: '#FDFBF7' }} className="min-h-screen flex text-stone-900">
       <div className="hidden lg:flex lg:w-1/2 bg-amber-50/80 text-stone-900 flex-col justify-center px-16 border-r border-black relative overflow-hidden">

@@ -1,35 +1,10 @@
-import axios from 'axios'
+import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
 });
-
-// async function request(path, options = {}) {
-//   const headers = { ...options.headers };
-
-//   //Setting FormData dan JSON
-//   if (!(options.body instanceof FormData)) {
-//       headers['Content-Type'] = headers['Content-Type'] || 'application/json';
-//   }
-
-//   const res = await fetch(`${API_BASE_URL}/api${path}`, {
-//     ...options,
-//     headers, 
-//   });
-
-//   let data = {};
-//   try {
-//     data = await res.json();
-//   } catch {
-//   }
-
-//   if (!res.ok) {
-//     throw new Error(data.message || `Terjadi kesalahan (${res.status})`);
-//   }
-//   return data;
-// }
 
 // Interceptor Req
 api.interceptors.request.use(
@@ -50,7 +25,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      //Lempar ke login kalo token expired
+      // Lempar ke login kalau token expired
       clearSession();
       window.location.href = '/login'; 
     }
@@ -95,11 +70,10 @@ export function getSession() {
 
 export function clearSession() {
   localStorage.removeItem('token');
+  localStorage.removeItem('user');
 }
 
-
-
-// --- Auth: sesuai route backend yang ada (POST /api/login, POST /api/register) ---
+// --- API Service Functions (Menggunakan Axios Instance) ---
 
 export function loginUser({ email, password }) {
   console.log("loginUser dipanggil");
@@ -125,4 +99,3 @@ export function fetchBooks() {
 export function fetchBookById(id) {
   return api.get(`/books/${id}`);
 }
-

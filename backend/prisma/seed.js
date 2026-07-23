@@ -1,7 +1,8 @@
 // prisma/seed.js
+const { PrismaClient } = require("@prisma/client");
 const bcrypt = require('bcryptjs');
-const prisma = require('../src/config/db.js');
 
+const prisma = new PrismaClient();
 
 async function main() {
     const hashedPassword = await bcrypt.hash('admin123', 10);

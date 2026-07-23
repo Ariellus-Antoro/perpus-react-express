@@ -48,10 +48,21 @@ export default function KelolaMemberAdmin() {
   const fetchMembers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/admin/users`, getAuthHeader());
-      if (res.data) setMembers(res.data);
+      const res = await axios.get(`${API_BASE_URL}/admin/members`, getAuthHeader());
+      
+      // PERBAIKAN: Cek apakah datanya array atau dibungkus dalam object { data: [...] }
+      if (Array.isArray(res.data)) {
+        setMembers(res.data);
+      } else if (res.data && Array.isArray(res.data.data)) {
+        setMembers(res.data.data);
+      } else {
+        console.warn("Format data tidak dikenali:", res.data);
+        setMembers([]); // Cegah crash dengan set array kosong
+      }
+
     } catch (err) {
-      console.warn("Backend offline, menggunakan data fallback:", err.message);
+      console.warn("Gagal memuat data, menggunakan fallback:", err.message);
+      setMembers(fallbackMembers); // Gunakan data dummy jika gagal
     } finally {
       setLoading(false);
     }
@@ -61,12 +72,18 @@ export default function KelolaMemberAdmin() {
     fetchMembers();
   }, []);
 
-  const filteredMembers = members.filter(
-    (m) =>
-      m.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.nik.includes(searchQuery) ||
-      m.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // PERBAIKAN: Fungsi filter yang aman dari data null/undefined
+  const filteredMembers = (Array.isArray(members) ? members : []).filter((m) => {
+    const name = m?.full_name || "";
+    const nik = m?.nik || "";
+    const email = m?.email || "";
+    
+    return (
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      nik.includes(searchQuery) ||
+      email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   const handleOpenAddModal = () => {
     setFormData(emptyForm);
@@ -114,10 +131,10 @@ export default function KelolaMemberAdmin() {
 
     try {
       if (isEditing) {
-        await axios.post(`${API_BASE_URL}/admin/users/${formData.id}?_method=PUT`, payload, getAuthHeader());
+        await axios.put(`${API_BASE_URL}/admin/members/${formData.id}`, payload, getAuthHeader());
         alert('Data pengguna berhasil diperbarui!');
       } else {
-        await axios.post(`${API_BASE_URL}/admin/users`, payload, getAuthHeader());
+        await axios.post(`${API_BASE_URL}/admin/members`, payload, getAuthHeader());
         alert('Pengguna baru berhasil ditambahkan!');
       }
       fetchMembers();
@@ -143,7 +160,7 @@ export default function KelolaMemberAdmin() {
   const handleDelete = async (id) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus / memblokir pengguna ini?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/admin/users/${id}`, getAuthHeader());
+      await axios.delete(`${API_BASE_URL}/admin/members/${id}`, getAuthHeader());
       alert('Pengguna berhasil dihapus!');
       fetchMembers();
     } catch (err) {

@@ -41,7 +41,7 @@ export default function KelolaVerifikasiAdmin() {
   const fetchPendingData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/admin/users/pending`, getAuthHeader());
+      const res = await axios.get(`${API_BASE_URL}/admin/members/pending`, getAuthHeader());
       if (res.data) setPendingList(res.data);
     } catch (err) {
       console.warn("Backend offline, menggunakan data fallback:", err.message);
@@ -52,16 +52,24 @@ export default function KelolaVerifikasiAdmin() {
 
   useEffect(() => {
     fetchPendingData();
+
   }, []);
 
-  const handleStatusAction = async (userId, newStatus) => {
+ const handleStatusAction = async (userId, newStatus) => {
     try {
-      await axios.patch(`${API_BASE_URL}/admin/users/${userId}/status`, { account_status: newStatus }, getAuthHeader());
-      alert(`Verifikasi berhasil di-${newStatus.toLowerCase()}!`);
-      fetchPendingData();
+      await axios.patch(`${API_BASE_URL}/admin/members/${userId}/status`, 
+        { 
+          status: newStatus,          
+          account_status: newStatus   
+        }, 
+        getAuthHeader()
+      );
+      
+      // PERBAIKAN: Gunakan setPendingList sesuai dengan nama state di komponen ini
+      setPendingList(prev => prev.filter(user => user.id !== userId));
+      alert(`Berhasil mengubah status menjadi ${newStatus}`);
     } catch (err) {
-      setPendingList(prev => prev.filter(u => u.id !== userId));
-      alert(`[Demo Mode] Status user ID ${userId} diubah ke ${newStatus}`);
+      alert("Gagal memperbarui status: " + (err.response?.data?.message || err.message));
     }
   };
 

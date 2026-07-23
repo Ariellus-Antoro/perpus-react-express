@@ -19,15 +19,35 @@ function Login() {
     setLoading(true);
     try {
       const res = await loginUser(form);
-      saveSession(res.token);
       
-      if (res.data.role === 'ADMIN') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/');
+      console.log("CEK DATA DARI BACKEND:", res);
+      
+      // 1. Tarik token dan user sesuai struktur objek dari backend
+      const token = res.token;          // Token ada di luar (sejajar dengan success & message)
+      const user = res.data;            // Data profil/role dibungkus di dalam key "data"
+
+      // Pastikan data user terbaca sebelum lanjut
+      if (!user) {
+         throw new Error("Data user tidak ditemukan dari server.");
       }
+
+      // 2. Simpan ke LocalStorage
+      saveSession(token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // 3. Standarisasi format role ke huruf besar (Uppercase)
+      const userRole = user.role ? user.role.toUpperCase() : '';
+
+      // 4. Eksekusi Navigasi
+      if (userRole === 'ADMIN') {
+        navigate('/admin/dashboard'); 
+      } else {
+        navigate('/'); 
+      }
+      
     } catch (err) {
-      setError(err.message || 'Login gagal. Silakan periksa kredensial Anda.');
+      const errorMessage = err.response?.data?.message || err.message || 'Login gagal. Silakan periksa kredensial Anda.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
