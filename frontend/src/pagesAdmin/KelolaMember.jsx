@@ -2,16 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Header from '../components/Header';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8080/api';
 
-//Data Dummy
-const fallbackMembers = [
-  { id: 1, full_name: 'Ahmad Rizky', nik: '3374012304900001', email: 'ahmad@gmail.com', phone: '081234567890', role: 'MEMBER', account_status: 'APPROVED', created_at: '2026-07-10' },
-  { id: 2, full_name: 'Budi Santoso', nik: '3374012304900002', email: 'budi@gmail.com', phone: '081298765432', role: 'MEMBER', account_status: 'PENDING', created_at: '2026-07-20' },
-  { id: 3, full_name: 'Samuel ', nik: '6720232070000000', email: 'samuel@admin.com', phone: '089999999999', role: 'ADMIN', account_status: 'APPROVED', created_at: '2026-07-21' },
-  { id: 4, full_name: 'faris', nik: '6720232010000000', email: 'faris@admin.com', phone: '089999999999', role: 'ADMIN', account_status: 'APPROVED', created_at: '2026-07-22' },
-  { id: 5, full_name: 'ariel', nik: '6720231070000000', email: 'aril@admin.com', phone: '089999999999', role: 'ADMIN', account_status: 'APPROVED', created_at: '2026-07-23' },
-];
 
 const emptyForm = {
   id: null,
@@ -28,7 +20,7 @@ const emptyForm = {
 
 export default function KelolaMemberAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [members, setMembers] = useState(fallbackMembers);
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // State Modal (Tambah & Edit)
@@ -48,7 +40,7 @@ export default function KelolaMemberAdmin() {
   const fetchMembers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/admin/members`, getAuthHeader());
+      const res = await axios.get(`${API_BASE_URL}/user`, getAuthHeader());
       
       // PERBAIKAN: Cek apakah datanya array atau dibungkus dalam object { data: [...] }
       if (Array.isArray(res.data)) {
@@ -61,8 +53,7 @@ export default function KelolaMemberAdmin() {
       }
 
     } catch (err) {
-      console.warn("Gagal memuat data, menggunakan fallback:", err.message);
-      setMembers(fallbackMembers); // Gunakan data dummy jika gagal
+      console.warn("Gagal memuat data: ", err.message);
     } finally {
       setLoading(false);
     }
@@ -131,36 +122,23 @@ export default function KelolaMemberAdmin() {
 
     try {
       if (isEditing) {
-        await axios.put(`${API_BASE_URL}/admin/members/${formData.id}`, payload, getAuthHeader());
+        await axios.put(`${API_BASE_URL}/user/${formData.id}`, payload, getAuthHeader());
         alert('Data pengguna berhasil diperbarui!');
       } else {
-        await axios.post(`${API_BASE_URL}/admin/members`, payload, getAuthHeader());
+        await axios.post(`${API_BASE_URL}/user`, payload, getAuthHeader());
         alert('Pengguna baru berhasil ditambahkan!');
       }
       fetchMembers();
       setIsModalOpen(false);
     } catch (err) {
-      if (isEditing) {
-        setMembers((prev) => prev.map((m) => (m.id === formData.id ? { ...formData, ktp: 'foto-terupdate.jpg' } : m)));
-        alert('[Demo Mode] Berhasil mengedit data pengguna!');
-      } else {
-        const newMember = {
-          ...formData,
-          id: Date.now(),
-          ktp: formData.ktp ? formData.ktp.name : null,
-          created_at: new Date().toISOString().split('T')[0],
-        };
-        setMembers((prev) => [newMember, ...prev]);
-        alert('[Demo Mode] Berhasil menambah pengguna baru!');
-      }
-      setIsModalOpen(false);
+      alert("Gagal menyimpan data: " + (err.response?.data?.message || err.message));
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Apakah Anda yakin ingin menghapus / memblokir pengguna ini?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/admin/members/${id}`, getAuthHeader());
+      await axios.delete(`${API_BASE_URL}/user/${id}`, getAuthHeader());
       alert('Pengguna berhasil dihapus!');
       fetchMembers();
     } catch (err) {
@@ -169,7 +147,7 @@ export default function KelolaMemberAdmin() {
     }
   };
 
-  return (
+return (
     <div className="space-y-6 text-stone-900 font-body">
       <Header value={searchQuery} onChange={setSearchQuery} placeholder="Cari nama, NIK, atau email..." />
 
@@ -182,7 +160,6 @@ export default function KelolaMemberAdmin() {
 
 
       {/* Tabel Data Anggota/Pengguna */}
-
       <div className="flex justify-between items-center mb-4 pb-3 border-b border-black">
         <h2 className="font-headline font-bold text-stone-950 text-lg flex items-center gap-2">
           Daftar Pengguna ({filteredMembers.length})
@@ -208,7 +185,7 @@ export default function KelolaMemberAdmin() {
             </tr>
           </thead>
           <tbody className="divide-y divide-black/10">
-            {filteredMembers.length === 0 ? (
+            {filteredMembers.length === 0 && !loading ? (
               <tr>
                 <td colSpan="5" className="p-6 text-center text-stone-500 font-body">Tidak ada data ditemukan.</td>
               </tr>
@@ -224,19 +201,21 @@ export default function KelolaMemberAdmin() {
                     <p className="text-xs text-stone-600">{member.phone || '-'}</p>
                   </td>
                   <td className="p-3">
-                    <span className={`px-2.5 py-1 text-[10px] font-label font-bold rounded-lg border ${member.role === 'ADMIN' ? 'bg-amber-200 text-stone-950 border-black' : 'bg-stone-100 text-stone-700 border-stone-400'
-                      }`}>
+                    <span className={`px-2.5 py-1 text-[10px] font-label font-bold rounded-lg border ${
+                      member.role === 'ADMIN' ? 'bg-amber-200 text-stone-950 border-black' : 'bg-stone-100 text-stone-700 border-stone-400'
+                    }`}>
                       {member.role || 'MEMBER'}
                     </span>
                   </td>
                   <td className="p-3">
                     <span
-                      className={`px-2.5 py-1 text-[11px] font-label font-bold rounded-full border ${member.account_status === 'APPROVED' || member.account_status === 'AKTIF'
-                        ? 'bg-amber-200 text-stone-950 border-black'
-                        : member.account_status === 'PENDING'
-                          ? 'bg-amber-100 text-amber-900 border-black'
-                          : 'bg-rose-100 text-rose-800 border-rose-400'
-                        }`}
+                      className={`px-2.5 py-1 text-[11px] font-label font-bold rounded-full border ${
+                        member.account_status === 'APPROVED' || member.account_status === 'AKTIF'
+                          ? 'bg-amber-200 text-stone-950 border-black'
+                          : member.account_status === 'PENDING'
+                            ? 'bg-amber-100 text-amber-900 border-black'
+                            : 'bg-rose-100 text-rose-800 border-rose-400'
+                      }`}
                     >
                       {member.account_status}
                     </span>
@@ -268,7 +247,7 @@ export default function KelolaMemberAdmin() {
           <div className="bg-amber-50 rounded-3xl border border-black w-full max-w-2xl p-6 shadow-xl max-h-[90vh] overflow-y-auto text-stone-900 font-body">
             <div className="flex justify-between items-center mb-4 border-b border-black pb-3">
               <h3 className="text-lg font-headline font-bold text-stone-950">
-                {isEditing ? '✏️ Edit Data Pengguna' : '➕ Tambah Pengguna Baru'}
+                {isEditing ? ' Edit Data Pengguna' : ' Tambah Pengguna Baru'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}

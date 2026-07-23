@@ -8,7 +8,6 @@ const navItems = [
   { to: '/admin/kategori', label: 'Kelola Kategori', icon: CategoryIcon },
   { to: '/admin/member', label: 'Kelola Member', icon: MemberIcon },
   { to: '/admin/pinjaman', label: 'Pinjaman Buku', icon: BookIcon },
-  { to: '/admin/verifikasi', label: 'Verifikasi Member', icon: VerifikasiIcon },
 ];
 
 export default function SidebarAdmin() {
