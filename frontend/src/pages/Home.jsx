@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
-import { books } from '../data/books';
 import { fetchBooks } from '../services/api';
 
+// 1. Tambahkan konstanta ASSET_URL
+const ASSET_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function Home() {
   const [query, setQuery] = useState('');
@@ -15,9 +16,7 @@ function Home() {
   useEffect(() => {
     const getLatestBooks = async () => {
       try {
-        //Fetch book 6
         const res = await fetchBooks(6);
-        
         if (res.status === 'success') {
           setLatestBooks(res.data);
         }
@@ -27,9 +26,15 @@ function Home() {
         setLoading(false);
       }
     };
-
     getLatestBooks();
   }, []);
+
+  // 2. Bawa fungsi pembantu getCoverImage ke sini
+  const getCoverImage = (coverPath) => {
+    if (!coverPath) return 'https://placehold.co/300x420/e7e5e4/a8a29e?text=No+Cover';
+    if (coverPath.startsWith('http')) return coverPath;
+    return `${ASSET_URL}/uploads/${coverPath}`; 
+  };
 
   return (
     <AppShell header={<Header value={query} onChange={setQuery} />}>
@@ -53,33 +58,32 @@ function Home() {
             Buku Pilihan
           </h3>
           <Link 
-            to ="/buku"
+            to="/buku"
             className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
             Lihat semua &rarr;
           </Link>
         </div>
 
-
-
         {/* Grid Book Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
         {loading ? (
-            <div className="col-span-full flex justify-center items-center font-label font-bold text-stone-500">
+            <div className="col-span-full flex justify-center items-center font-label font-bold text-stone-500 py-8">
               Memuat koleksi buku...
             </div>
-
-        ) : latestBooks.length>0?(
+        ) : latestBooks.length > 0 ? (
           latestBooks.map((b) =>(
-            <Link key={b.id} to={`/buku/${b.id}`} className="group">
+            // 3. PERBAIKAN: Gunakan rute "/buku" dan kirimkan data buku lewat 'state'
+            <Link key={b.id} to="/buku" state={{ selectedBook: b }} className="group transform hover:-translate-y-1 transition-transform duration-200">
                 <BookCard 
                   title={b.title} 
                   author={b.author} 
-                  coverUrl={b.book_cover ? `http://localhost:8080/uploads/${b.book_cover}` : null} 
+                  // 4. Gunakan fungsi getCoverImage
+                  coverUrl={getCoverImage(b.book_cover)} 
                 />
             </Link>
           ))
         ) : (
-          <div className="col-span-full text-center font-label text-stone-500">
+          <div className="col-span-full text-center font-label text-stone-500 py-8">
             Belum ada buku yang tersedia.
           </div>
         )}
