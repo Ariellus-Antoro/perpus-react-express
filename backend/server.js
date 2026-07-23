@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 // 3. Akses folder 'public' (untuk menyimpan file upload KTP nantinya)
 app.use(express.static(path.join(__dirname, "public")));
 
+
 // 4. Daftarkan Routes Utama
 app.use("/api", mainRoutes);
 

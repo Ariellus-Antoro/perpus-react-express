@@ -10,35 +10,44 @@ function Login() {
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (error) setError('');
   }
 
   async function handleSubmit(e) {
     console.log("handleSubmit dipanggil");
     e.preventDefault();
     setError('');
+
+    // Validasi form kosong
+    if (!form.email || !form.password) {
+      return setError('Email dan password tidak boleh kosong.');
+    }
+
     setLoading(true);
+
     try {
       const res = await loginUser(form);
       
-      console.log("CEK DATA DARI BACKEND:", res);
+      // console.log("CEK DATA DARI BACKEND:", res);
       
-      // 1. Tarik token dan user sesuai struktur objek dari backend
-      const token = res.token;          // Token ada di luar (sejajar dengan success & message)
-      const user = res.data;            // Data profil/role dibungkus di dalam key "data"
+      // Tarik token 
+      const token = res.token;        
+      const user = res.data;            
 
       // Pastikan data user terbaca sebelum lanjut
       if (!user) {
          throw new Error("Data user tidak ditemukan dari server.");
       }
 
-      // 2. Simpan ke LocalStorage
+      // Simpan ke LocalStorage
       saveSession(token);
+
       localStorage.setItem('user', JSON.stringify(user));
       
-      // 3. Standarisasi format role ke huruf besar (Uppercase)
+      // Standarisasi format role ke huruf besar (Uppercase)
       const userRole = user.role ? user.role.toUpperCase() : '';
 
-      // 4. Eksekusi Navigasi
+      // Eksekusi Navigasi
       if (userRole === 'ADMIN') {
         navigate('/admin/dashboard'); 
       } else {
@@ -46,8 +55,40 @@ function Login() {
       }
       
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'Login gagal. Silakan periksa kredensial Anda.';
-      setError(errorMessage);
+      if (err.response) {
+        const status = err.response.status;
+        const backendMessage = err.response.data?.message?.toLowerCase() || '';
+
+        //Validasi password salah
+        if (status === 401) {
+          setError('Email atau password yang Anda masukkan salah.');
+        } 
+
+        //Validasi pending
+        else if (status === 403) {
+          if (backendMessage.includes('pending') || backendMessage.includes('verifikasi')) {
+            setError('Akun Anda masih berstatus PENDING. Silakan tunggu persetujuan Admin.');
+          } else {
+            setError('Akses ditolak. Anda tidak memiliki izin untuk masuk.');
+          }
+
+        //Validasi Akun tidak ditemukan
+        } else if (status === 404) {
+          setError('Akun dengan email tersebut tidak ditemukan.');
+        } else {
+          // Fallback untuk status error lainnya (500, 400, dll)
+          setError(err.response.data?.message || 'Terjadi kesalahan pada server. Silakan coba lagi nanti.');
+        }
+      }
+      else if(err.request){
+        setError('Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil atau coba lagi nanti.');
+      }
+      else{
+        setError(err.message || 'Terjadi kesalahan yang tidak terduga.');
+      }
+        
+      // const errorMessage = err.response?.data?.message || err.message || 'Login gagal. Silakan periksa kredensial Anda.';
+      // setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -73,6 +114,8 @@ function Login() {
         </p>
       </div>
 
+
+
       {/* Right Form Section */}
       <div className="flex-1 flex items-center justify-center px-6 py-10" style={{ backgroundColor: '#FDFBF7' }}>
         <div className="w-full max-w-sm bg-amber-50/40 p-8 rounded-3xl border border-black shadow-xs">
@@ -81,6 +124,7 @@ function Login() {
             <p className="text-sm font-body text-stone-600">Masuk untuk melanjutkan ke Perpustakaan Digital</p>
           </div>
 
+          {/* Pesan Error */}
           {error && (
             <div className="mb-5 rounded-2xl bg-rose-50 border border-rose-400 text-rose-700 text-sm font-medium px-4 py-3 shadow-xs">
               {error}

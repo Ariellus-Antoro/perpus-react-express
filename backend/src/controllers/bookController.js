@@ -2,7 +2,8 @@ const bookService = require("../services/bookService");
 
 async function index(req, res) {
   try {
-    const books = await bookService.getAllBooks();
+    const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+    const books = await bookService.getAllBooks(limit);
 
     res.status(200).json({
       status: "success",
