@@ -1,19 +1,23 @@
 
 const authService = require('../services/authService');
 
-
 const register = async (req, res) => {
     try {
-        const userData = { ...req.body };
-
         if (!req.file) {
             return res.status(400).json({
                 success: false,
                 message: "Foto KTP wajib diunggah!"
             });
         }
-
-        userData.ktp = `/uploads/ktp/${req.file.filename}`;
+        const userData = { 
+            nik: req.body.nik,
+            email: req.body.email,
+            password: req.body.password,
+            full_name: req.body.full_name,
+            address: req.body.address,
+            phone: req.body.phone,
+            ktp: req.file.filename // Cukup simpan nama filenya saja!
+        };
 
         await authService.registerUser(userData);
 
@@ -23,10 +27,7 @@ const register = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message
-        });
+        res.status(400).json({ success: false, message: error.message });
     }
 };
 

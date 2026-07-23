@@ -1,45 +1,85 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
-import { books, categories } from '../data/books';
+import api from '../services/api'; // Integrasi API terpusat
 
-const tabs = ['Semua', 'Fiksi', 'Non-Fiksi', 'Sains', 'Sejarah'];
-
-const fiksi = [
-  { title: 'Laskar Pelangi', author: 'Andrea Hirata', gradient: 'linear-gradient(160deg,#78350f,#451a03)' },
-  { title: 'Cantik Itu Luka', author: 'Eka Kurniawan', gradient: 'linear-gradient(160deg,#92400e,#581c87)' },
-  { title: 'Negeri 5 Menara', author: 'A. Fuadi', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
-  { title: 'Laut Bercerita', author: 'Leila S. Chudori', gradient: 'linear-gradient(160deg,#65a30d,#3f6212)' },
-];
-
-const nonFiksi = [
-  { title: 'Sapiens', author: 'Yuval N. Harari', gradient: 'linear-gradient(160deg,#475569,#1e293b)' },
-  { title: 'Atomic Habits', author: 'James Clear', gradient: 'linear-gradient(160deg,#d97706,#b45309)' },
-  { title: 'Filosofi Teras', author: 'Henry Manampiring', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
-  { title: 'Bumi Manusia', author: 'Pramoedya A.T.', gradient: 'linear-gradient(160deg,#854d0e,#422006)' },
-];
+const ASSET_URL = 'http://localhost:8000';
 
 export default function Buku() {
   const [query, setQuery] = useState('');
   const [active, setActive] = useState('Semua');
 
-  const filtered = useMemo(() => {
+  // State untuk menyimpan data dari Backend
+  const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Mengambil data saat halaman pertama kali dimuat
+  useEffect(() => {
+    const fetchBooksAndCategories = async () => {
+      try {
+        const [resBooks, resCats] = await Promise.all([
+          api.get('/books'),
+          api.get('/categories')
+        ]);
+        
+        if (resBooks) setBooks(resBooks.data || resBooks);
+        if (resCats) setCategories(resCats.data || resCats);
+      } catch (error) {
+        console.error("Gagal mengambil data buku:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooksAndCategories();
+  }, []);
+
+  console.log("Data buku dari backend:", books);
+
+  // 1. Membuat Tab Dinamis berdasarkan data kategori dari database
+  const tabs = ['Semua', ...categories.map(c => c.category_name)];
+
+  // 2. Filter buku berdasarkan Search (query) dan Tab Kategori (active)
+  const filteredBooks = useMemo(() => {
     return books.filter((b) => {
-      const matchCategory =
-        active === 'Semua' || categories.find((c) => c.id === b.category_id)?.category_name === active;
+      const catName = b.category?.category_name || 'Tanpa Kategori';
+      const matchCategory = active === 'Semua' || catName === active;
+      
       const matchQuery =
         !query ||
         b.title.toLowerCase().includes(query.toLowerCase()) ||
         b.author.toLowerCase().includes(query.toLowerCase());
+        
       return matchCategory && matchQuery;
     });
-  }, [active, query]);
+  }, [books, active, query]);
+
+  // 3. Mengelompokkan buku yang sudah difilter berdasarkan Kategori (Grouping)
+  // Ini bertujuan agar tampilan per-section (seperti Fiksi, Non-Fiksi) otomatis terbentuk
+  const groupedBooks = useMemo(() => {
+    const groups = {};
+    filteredBooks.forEach(book => {
+      const catName = book.category?.category_name || 'Tanpa Kategori';
+      if (!groups[catName]) groups[catName] = [];
+      groups[catName].push(book);
+    });
+    return groups;
+  }, [filteredBooks]);
+
+  // Fungsi pembantu untuk memuat gambar cover
+  const getCoverImage = (coverPath) => {
+    // Ganti via.placeholder.com menjadi placehold.co
+    if (!coverPath) return 'https://placehold.co/300x420/e7e5e4/a8a29e?text=No+Cover';
+    if (coverPath.startsWith('http')) return coverPath;
+    
+    return `${ASSET_URL}/uploads/${coverPath}`; 
+  };
 
   return (
-    <AppShell header={<Header value={query} onChange={setQuery} placeholder="Cari judul buku..." />}>
-      {/* Background utama putih polos */}
+    <AppShell header={<Header value={query} onChange={setQuery} placeholder="Cari judul buku atau penulis..." />}>
       <div className="bg-white min-h-screen p-2 md:p-4 space-y-6 text-stone-900">
         
         {/* Category Pills Header */}
@@ -60,46 +100,46 @@ export default function Buku() {
           ))}
         </div>
 
-        {/* Section 1: Fiksi */}
-        <div className="flex items-baseline justify-between mb-3 border-b border-black pb-2">
-          <h3 className="font-bold text-stone-900 text-lg flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-stone-900 inline-block"></span>
-            Fiksi
-          </h3>
-          <span className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
-            Lihat semua &rarr;
-          </span>
-        </div>
-        
-        {/* Container grid dengan border hitam */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
-          {fiksi.map((b, index) => (
-            <Link key={b.title} to={`/buku/${index + 1}`} className="group">
-              <BookCard {...b} />
-            </Link>
-          ))}
-        </div>
-
-        {/* Section 2: Non-Fiksi */}
-        <div className="flex items-baseline justify-between mb-3 border-b border-black pb-2">
-          <h3 className="font-bold text-stone-900 text-lg flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-stone-900 inline-block"></span>
-            Non-Fiksi
-          </h3>
-          <span className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
-            Lihat semua &rarr;
-          </span>
-        </div>
-
-        {/* Container grid dengan border hitam */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
-          {nonFiksi.map((b, index) => (
-            <Link key={b.title} to={`/buku/${fiksi.length + index + 1}`} className="group">
-              <BookCard {...b} />
-            </Link>
-          ))}
-        </div>
-
+        {/* State Loading / Data Kosong */}
+        {loading ? (
+          <p className="text-center text-stone-500 font-body py-12 animate-pulse">Memuat koleksi buku perpustakaan...</p>
+        ) : Object.keys(groupedBooks).length === 0 ? (
+          <p className="text-center text-stone-500 font-body py-12">Tidak ada buku yang ditemukan.</p>
+        ) : (
+          /* Render Dinamis: Looping Section berdasarkan Kategori yang tersedia */
+          Object.keys(groupedBooks).map((categoryName) => (
+            <div key={categoryName} className="mb-8">
+              {/* Header Kategori */}
+              <div className="flex items-baseline justify-between mb-3 border-b border-black pb-2">
+                <h3 className="font-bold text-stone-900 text-lg flex items-center gap-2 capitalize">
+                  <span className="w-2 h-2 rounded-full bg-stone-900 inline-block"></span>
+                  {categoryName}
+                </h3>
+                {/* Tampilkan tombol "Lihat semua" hanya jika buku di kategori ini lebih dari 6 */}
+                {groupedBooks[categoryName].length > 6 && (
+                  <span className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
+                    Lihat semua &rarr;
+                  </span>
+                )}
+              </div>
+              
+              {/* Container Grid Buku */}
+             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
+                {groupedBooks[categoryName].map((b) => (
+                  <Link key={b.id} to={`/buku/${b.id}`} className="group">
+                    {/* PASTIKAN BAGIAN INI DITULIS SEPERTI INI: */}
+                    <BookCard 
+                      id={b.id}
+                      title={b.title} 
+                      author={b.author} 
+                      coverUrl={getCoverImage(b.book_cover)} 
+                    />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </AppShell>
   );

@@ -42,96 +42,66 @@ async function show(req, res) {
 
 async function store(req, res) {
   try {
-    // req.body sekarang sudah terbaca!
     const { title, author, publisher, year, category_id, total_stock } = req.body;
 
+    // Validasi dasar
     if (!title || !author || !publisher || !year || !category_id || total_stock === undefined) {
-      return res.status(400).json({
-        status: "error",
-        message: "title, author, publisher, year, category_id, dan total_stock wajib diisi",
-      });
+      return res.status(400).json({ status: "error", message: "Data wajib diisi semua" });
     }
 
     if (Number(total_stock) < 0) {
-      return res.status(400).json({
-        status: "error",
-        message: "total_stock tidak boleh negatif",
-      });
+      return res.status(400).json({ status: "error", message: "Stok tidak boleh negatif" });
     }
 
     const category = await bookService.getCategoryById(category_id);
-    if (!category) {
-      return res.status(404).json({
-        status: "error",
-        message: "Kategori tidak ditemukan",
-      });
-    }
+    if (!category) return res.status(404).json({ status: "error", message: "Kategori tidak ditemukan" });
 
-    // TANGKAP FILE GAMBAR: Jika ada file yang diunggah, simpan nama filenya ke req.body.book_cover
-    if (req.file) {
-      req.body.book_cover = req.file.filename;
-    }
+    // PERBAIKAN: Buat objek data yang bersih dan casting tipe data angka
+    const bookData = {
+      title: title,
+      author: author,
+      publisher: publisher,
+      year: parseInt(year),
+      category_id: parseInt(category_id),
+      total_stock: parseInt(total_stock),
+      available: parseInt(total_stock), // Tersedia awal = total stok
+      book_cover: req.file ? req.file.filename : null, // Tangkap nama file!
+    };
 
-    const book = await bookService.createBook(req.body);
+    // Kirim objek yang sudah bersih ke Service
+    const book = await bookService.createBook(bookData);
 
-    res.status(201).json({
-      status: "success",
-      data: book,
-    });
+    res.status(201).json({ status: "success", data: book });
   } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: error.message,
-    });
+    res.status(500).json({ status: "error", message: error.message });
   }
 }
 
 async function update(req, res) {
   try {
     const { id } = req.params;
-    const { category_id, total_stock } = req.body;
-
     const existing = await bookService.getBookById(id);
-    if (!existing) {
-      return res.status(404).json({
-        status: "error",
-        message: "Buku tidak ditemukan",
-      });
-    }
+    if (!existing) return res.status(404).json({ status: "error", message: "Buku tidak ditemukan" });
 
-    if (category_id) {
-      const category = await bookService.getCategoryById(category_id);
-      if (!category) {
-        return res.status(404).json({
-          status: "error",
-          message: "Kategori tidak ditemukan",
-        });
-      }
-    }
+    // 💡 PERBAIKAN: Siapkan objek update
+    const updateData = { ...req.body };
 
-    if (total_stock !== undefined && Number(total_stock) < 0) {
-      return res.status(400).json({
-        status: "error",
-        message: "total_stock tidak boleh negatif",
-      });
-    }
+    // Parsing ke integer jika data dikirim
+    if (updateData.year) updateData.year = parseInt(updateData.year);
+    if (updateData.category_id) updateData.category_id = parseInt(updateData.category_id);
+    if (updateData.total_stock) updateData.total_stock = parseInt(updateData.total_stock);
+    if (updateData.available) updateData.available = parseInt(updateData.available);
 
-    // TANGKAP FILE GAMBAR: Jika Admin mengunggah cover baru, timpa data cover yang lama
+    // Tangkap file jika admin mengunggah cover baru
     if (req.file) {
-      req.body.book_cover = req.file.filename;
+      updateData.book_cover = req.file.filename;
     }
 
-    const book = await bookService.updateBook(id, req.body);
+    const book = await bookService.updateBook(id, updateData);
 
-    res.status(200).json({
-      status: "success",
-      data: book,
-    });
+    res.status(200).json({ status: "success", data: book });
   } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: error.message,
-    });
+    res.status(500).json({ status: "error", message: error.message });
   }
 }
 
