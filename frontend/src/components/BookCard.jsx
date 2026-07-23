@@ -10,7 +10,6 @@ function BookCard({ id, title, author, coverUrl }) {
           alt={`Cover buku ${title}`} 
           className="w-full h-full object-cover"
           onError={(e) => {
-            // Ganti menggunakan placehold.co yang lebih ramah koneksi lokal
             e.target.src = 'https://placehold.co/300x420/e7e5e4/a8a29e?text=No+Cover';
           }}
         />

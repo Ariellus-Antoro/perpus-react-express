@@ -1,21 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import AppShell from '../components/AppShell';
 import BookCard from '../components/BookCard';
 import { books } from '../data/books';
+import { fetchBooks } from '../services/api';
 
-const rekomendasi = [
-  { title: 'Laut Bercerita', author: 'Leila S. Chudori', gradient: 'linear-gradient(160deg,#65a30d,#3f6212)' },
-  { title: 'Bumi Manusia', author: 'Pramoedya A.T.', gradient: 'linear-gradient(160deg,#854d0e,#422006)' },
-  { title: 'Filosofi Teras', author: 'Henry Manampiring', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
-  { title: 'Sapiens', author: 'Yuval N. Harari', gradient: 'linear-gradient(160deg,#475569,#1e293b)' },
-  { title: 'Atomic Habits', author: 'James Clear', gradient: 'linear-gradient(160deg,#d97706,#b45309)' },
-  { title: 'Negeri 5 Menara', author: 'A. Fuadi', gradient: 'linear-gradient(160deg,#b45309,#78350f)' },
-];
 
 function Home() {
   const [query, setQuery] = useState('');
+  const [latestBooks, setLatestBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getLatestBooks = async () => {
+      try {
+        //Fetch book 6
+        const res = await fetchBooks(6);
+        
+        if (res.status === 'success') {
+          setLatestBooks(res.data);
+        }
+      } catch (error) {
+        console.error('Gagal mengambil data buku:', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getLatestBooks();
+  }, []);
 
   return (
     <AppShell header={<Header value={query} onChange={setQuery} />}>
@@ -38,26 +52,45 @@ function Home() {
             <span className="w-2.5 h-2.5 rounded-full bg-stone-950 inline-block"></span>
             Buku Pilihan
           </h3>
-          <span className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
+          <Link 
+            to ="/buku"
+            className="text-xs md:text-sm font-semibold text-stone-900 hover:underline cursor-pointer transition">
             Lihat semua &rarr;
-          </span>
+          </Link>
         </div>
+
+
 
         {/* Grid Book Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 rounded-2xl bg-amber-50/40 border border-black shadow-xs">
-          {rekomendasi.map((b, index) => (
-            <Link key={b.title} to={`/buku/${index + 1}`} className="group">
-              <BookCard title={b.title} author={b.author} gradient={b.gradient} />
+        {loading ? (
+            <div className="col-span-full flex justify-center items-center font-label font-bold text-stone-500">
+              Memuat koleksi buku...
+            </div>
+
+        ) : latestBooks.length>0?(
+          latestBooks.map((b) =>(
+            <Link key={b.id} to={`/buku/${b.id}`} className="group">
+                <BookCard 
+                  title={b.title} 
+                  author={b.author} 
+                  coverUrl={b.book_cover ? `http://localhost:8080/uploads/${b.book_cover}` : null} 
+                />
             </Link>
-          ))}
+          ))
+        ) : (
+          <div className="col-span-full text-center font-label text-stone-500">
+            Belum ada buku yang tersedia.
+          </div>
+        )}
         </div>
 
         {/* Banner Klub Baca */}
         <section className="rounded-2xl bg-amber-50/80 border border-black p-6 md:p-8 shadow-xs">
           <h3 className="font-bold text-stone-950 text-lg mb-1 flex items-center gap-2">
-            ✨ Gabung Klub Baca
+            Gabung Klub Baca
           </h3>
-          <p className="text-sm text-stone-700">Diskusi buku bareng komunitas dan penikmat literatur setiap minggu.</p>
+          <p className="text-sm text-stone-700">Diskusi buku bareng komunitas dan penikmat literatur setiap minggu siang.</p>
         </section>
 
       </div>

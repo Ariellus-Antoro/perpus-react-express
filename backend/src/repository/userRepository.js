@@ -24,8 +24,8 @@ const createUser = async (userData) => {
             address: userData.address,
             phone: userData.phone,
             ktp: userData.ktp,
-            role: userData.role, // <-- PERBAIKAN: Wajib ditambahkan
-            account_status: userData.account_status // <-- PERBAIKAN: Wajib ditambahkan
+            role: userData.role, 
+            account_status: userData.account_status 
         }
     });
 };

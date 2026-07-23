@@ -94,7 +94,8 @@ export function fetchProfile() {
   return api.get('/user/profile'); 
 }
 
-export function fetchBooks() {
+export function fetchBooks(limit=null) {
+  const url = limit ? `/books?limit=${limit}` : '/books';
   return api.get('/books');
 }
 

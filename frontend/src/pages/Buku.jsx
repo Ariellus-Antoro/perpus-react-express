@@ -132,7 +132,7 @@ export default function Buku() {
                       id={b.id}
                       title={b.title} 
                       author={b.author} 
-                      coverUrl={getCoverImage(b.book_cover)} 
+                      coverUrl={b.book_cover ? `http://localhost:8080/uploads/${b.book_cover}` : null}
                     />
                   </Link>
                 ))}

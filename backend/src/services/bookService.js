@@ -1,16 +1,17 @@
 const prisma = require("../config/db");
 
-async function getAllBooks() {
+async function getAllBooks(limit) {
   return await prisma.books.findMany({
     where: {
       deleted_at: null,
     },
     include: {
-      category: true, // ikut sertakan data kategori terkait
+      category: true, 
     },
     orderBy: {
       created_at: "desc",
     },
+    take: limit,
   });
 }
 
