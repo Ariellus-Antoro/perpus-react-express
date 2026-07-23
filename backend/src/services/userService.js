@@ -49,7 +49,7 @@ const getUserProfile = async (userId) => {
     return user;
 };
 
-// 2. FUNGSI EDIT YANG DIPERBARUI: Mendukung perubahan password, role, dan email
+// 2. FUNGSI EDIT (UNTUK ADMIN): Mendukung perubahan password, role, dan email
 const editMember = async (userId, updateData) => {
     const user = await userRepo.getUserById(userId);
 
@@ -142,6 +142,62 @@ const removeMember = async (userId) => {
     };
 };
 
+// ============================================================================
+// FUNGSI BARU UNTUK HALAMAN "PENGATURAN AKUN" (AKSES MEMBER)
+// ============================================================================
+
+const updateUserProfile = async (userId, updateData) => {
+    const user = await userRepo.getUserById(userId);
+    if (!user) {
+        throw new Error('Data Pengguna tidak ditemukan');
+    }
+
+    // Pembatasan akses: Member hanya boleh mengubah Nama, Telepon, dan Alamat
+    const allowedUpdates = {
+        full_name: updateData.full_name,
+        phone: updateData.phone,
+        address: updateData.address
+    };
+
+    // Bersihkan field yang undefined agar query database tidak error
+    Object.keys(allowedUpdates).forEach(key => {
+        if (allowedUpdates[key] === undefined) {
+            delete allowedUpdates[key];
+        }
+    });
+
+    if (Object.keys(allowedUpdates).length === 0) {
+        throw new Error('Tidak ada data valid yang dikirim untuk diperbarui');
+    }
+
+    // Menggunakan fungsi updateUser yang sama dari repository Anda
+    const updatedUser = await userRepo.updateUser(userId, allowedUpdates);
+    return updatedUser;
+};
+
+const changeUserPassword = async (userId, oldPassword, newPassword) => {
+    const user = await userRepo.getUserById(userId);
+    if (!user) {
+        throw new Error('Data Pengguna tidak ditemukan');
+    }
+
+    // 1. Verifikasi kecocokan password lama menggunakan bcrypt
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+        throw new Error('Kata sandi saat ini tidak cocok');
+    }
+
+    // 2. Jika cocok, hash password baru
+    const salt = await bcrypt.genSalt(10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    // 3. Simpan password baru ke database (menggunakan repository Anda)
+    await userRepo.updateUser(userId, { password: hashedNewPassword });
+    
+    return true;
+};
+
+// Ekspor semua fungsi
 module.exports = {
     createMember, 
     getAllMembers,
@@ -150,5 +206,7 @@ module.exports = {
     approveMemberRegistration,
     getPendingMembers,
     changeMemberStatus,
-    removeMember
+    removeMember,
+    updateUserProfile,  
+    changeUserPassword  
 };
